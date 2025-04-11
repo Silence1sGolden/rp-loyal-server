@@ -1,6 +1,9 @@
+import { UUID } from 'crypto';
+
 export type TUser = {
   _id: string;
   username: string;
+  email: string;
   profileIMG: string;
   about: string;
   stats: TStats;
@@ -8,6 +11,8 @@ export type TUser = {
   likesTags: string[];
   forms: TRolesForm[];
 };
+
+export type TPassword = Record<UUID, string>;
 
 export type TStats = {
   likes: string[];
@@ -27,8 +32,6 @@ export type TRolesForm = {
 export type TRoles = {
   _id: string;
   title: string;
-  messages: TMessage[];
-  discussion: TMessage[];
   rolesImage: string;
 };
 
@@ -48,4 +51,15 @@ export type TRegister = {
   email: string;
   username: string;
   password: string;
+};
+
+export type TEmail = {
+  verify: boolean;
+  key?: TEmailToken;
+  email: string;
+};
+
+export type TEmailToken = {
+  key: UUID;
+  createdAt: number;
 };
