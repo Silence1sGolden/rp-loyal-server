@@ -12,13 +12,18 @@
         padding: 0px;
         border: none;
         box-sizing: border-box;
-        color: black;
+        color: #cccccc;
         font-family: 'Piazzolla', serif;
-        font-weight: 400;
+        font-weight: 200;
         background-color: #171717;
       }
 
       .table {
+        margin: auto;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #292929;
+        max-width: 450px;
         width: 100%;
       }
 
@@ -32,14 +37,61 @@
       }
 
       .link {
+        background-color: transparent;
+        color: rgb(52, 214, 52);
         text-decoration: none;
         text-align: center;
-        transition: color 0.3s;
+        transition:
+          color 0.3s,
+          text-shadow 0.3s;
       }
 
       .link:hover {
         cursor: pointer;
-        color: red;
+        text-shadow: 0px 0px 10px rgb(52, 214, 52);
+      }
+
+      .td {
+        position: relative;
+        padding: 10px 10px;
+      }
+
+      .message {
+        font-size: 14px;
+        font-weight: 200;
+        color: #cccccc;
+        padding: 10px;
+        border-radius: 15px;
+        background-color: #292929;
+      }
+
+      .message_first {
+        padding-top: 0px;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+      }
+
+      .author {
+        font-size: 14px;
+        width: 100%;
+        padding: 3px 7px;
+        padding-bottom: 0px;
+        color: #d14d4d;
+        background-color: #292929;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+      }
+
+      .t_left {
+        text-align: start;
+      }
+
+      .t_right {
+        text-align: end;
+      }
+
+      .msg {
+        width: 100%;
       }
 
       .img {
@@ -51,56 +103,76 @@
         border-radius: 100px;
         box-shadow: 0px 0px 10px #ffffff;
       }
-      .message {
-        font-size: 14px;
-        font-weight: 200;
-        color: #cccccc;
-        padding: 5px;
-        border: 1px solid #39393939;
-        border-radius: 5px;
-      }
 
-      .message:nth-child(even) {
-        margin: 10px 0px;
+      .vertical {
+        vertical-align: bottom;
       }
     </style>
   </head>
   <body>
     <table class="table">
-      <tbody>
+      <tbody class="tbody">
         <tr align="center">
-          <td style="border-bottom: 1px solid #cccccc" colspan="2">
+          <td style="border-bottom: 1px solid #cccccc" colspan="3">
             <h1 class="title">RP-Royal</h1>
           </td>
         </tr>
         <tr>
-          <td align="left">
+          <td width="50" class="vertical">
             <img
-              class="img"
+              class="img img_l"
               width="50"
               height="50"
               src="https://i.pinimg.com/736x/80/7a/48/807a48790f4cab320ebcec6a33614d33.jpg"
               alt="mute"
             />
           </td>
-          <td align="right">
-            <p class="message">
-              Привет! Я - mute, и я с радостью поздравляю тебя со вступлением в
-              нашу дружную семью.
-            </p>
-            <p class="message">
-              А перед началом, лучше всего подтвердить свою почту, чтоб у тебя
-              появилась возможность восстановить свой аккаунт или изменить
-              пароль в будущем.
-            </p>
-            <p class="message">Вдруг что-то произойдёт...</p>
+          <td align="left" class="td" colspan="2">
+            <table class="msg msg_r">
+              <tbody>
+                <tr>
+                  <td>
+                    <p class="author t_left">Mute</p>
+                    <p class="message message_first t_left">
+                      Привет! Я - mute, и я с радостью поздравляю тебя со
+                      вступлением в нашу дружную семью.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p class="message t_left">
+                      А перед началом, лучше всего подтвердить свою почту, чтоб
+                      у тебя появилась возможность восстановить свой аккаунт или
+                      изменить пароль в будущем.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p class="message t_left">Вдруг что-то произойдёт...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </td>
         </tr>
         <tr>
-          <td>
-            <p class="message">Ох уж эта дурацкая тема с подтверждением...</p>
+          <td class="td" colspan="2" align="right">
+            <table class="msg msg_l">
+              <tbody>
+                <tr>
+                  <td>
+                    <p class="author t_right">Пользователь</p>
+                    <p class="message message_first t_right">
+                      Ох уж эта дурацкая тема с подтверждением...
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </td>
-          <td>
+          <td align="right" width="50" class="vertical">
             <img
               class="img"
               width="50"
@@ -111,21 +183,32 @@
           </td>
         </tr>
         <tr>
-          <td>
+          <td align="left" width="50" class="vertical">
             <img
-              class="img"
+              class="img img_l"
               width="50"
               height="50"
               src="https://i.pinimg.com/736x/80/7a/48/807a48790f4cab320ebcec6a33614d33.jpg"
               alt="mute"
             />
           </td>
-          <td>
-            <p class="message">
-              Это не конец света, так что
-              <a class="vlink" href="${BASE_URL}/api/v/${uuID}">подтверди</a>
-              свою почту и гуляй смело, зато после ещё спасибо скажешь)
-            </p>
+          <td class="td" colspan="2" align="left">
+            <table class="msg msg_r">
+              <tbody>
+                <tr>
+                  <td>
+                    <p class="author t_left">Mute</p>
+                    <p class="message message_first t_left">
+                      Это не конец света, так что
+                      <a class="link" href="${BASE_URL}/api/v/r/${token}"
+                        >подтверди</a
+                      >
+                      свою почту и гуляй смело, зато после ещё спасибо скажешь)
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </td>
         </tr>
       </tbody>
