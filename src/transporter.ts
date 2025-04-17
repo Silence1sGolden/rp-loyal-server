@@ -1,7 +1,12 @@
 import nodemailer from 'nodemailer';
 import 'dotenv/config';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { BASE_URL, EMAIL, EMAIL_PASSWORD, getRandomCode } from './utils/utils';
+import {
+  BASE_URL,
+  EMAIL,
+  EMAIL_PASSWORD,
+  getRandomCode,
+} from './utils/service';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.mail.ru',
@@ -13,9 +18,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendVerifyMail(
+export async function sendRegMailWithToken(
   to: string[],
-  key: string | number,
+  token: string,
 ): Promise<void | SMTPTransport.SentMessageInfo> {
   return await transporter.sendMail({
     from: '"RP-loyal.official" <rployal.official@mail.ru>',
@@ -148,7 +153,7 @@ export async function sendVerifyMail(
           <td>
             <p class="message">
               Это не конец света, так что
-              <a class="vlink" href="${BASE_URL}/api/v/${key}">подтверди</a>
+              <a class="vlink" href="${BASE_URL}/api/v/r/${token}">подтверди</a>
               свою почту и гуляй смело, зато после ещё спасибо скажешь)
             </p>
           </td>

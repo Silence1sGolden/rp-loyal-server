@@ -4,6 +4,11 @@ export type TUser = {
   _id: string;
   username: string;
   email: string;
+};
+
+export type TProfile = {
+  _id: string;
+  username: string;
   profileIMG: string;
   about: string;
   stats: TStats;
@@ -37,7 +42,8 @@ export type TRoles = {
 
 export type TMessage = {
   _id: string;
-  name: string;
+  author: string;
+  authorIMG: string;
   message: string;
   sendAt: string;
 };
@@ -47,19 +53,31 @@ export type TLogin = {
   password: string;
 };
 
-export type TRegister = {
-  email: string;
+export type TRegister = TLogin & {
   username: string;
-  password: string;
 };
 
-export type TEmail = {
-  verify: boolean;
-  key?: TEmailToken;
+export type TVerifyEmail = {
   email: string;
-};
-
-export type TEmailToken = {
   key: UUID;
   createdAt: number;
 };
+
+export type TEmail = {
+  _id: string;
+  email: string;
+  verify: boolean;
+  active: null | TVerifyUser;
+};
+
+export type TVerifyUser = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type TCodeEmail = {
+  email: string;
+  createdAt: number;
+};
+
+export type TCodeVerify = Record<number, TCodeEmail>;

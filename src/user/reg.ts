@@ -1,22 +1,25 @@
-import {
-  checkEmailForSame,
-  getEmails,
-  getNextUserID,
-  writeEmails,
-  writePassword,
-  writeUser,
-} from '@/db/db';
-import { sendVerifyMail } from '@/transporter';
+import { sendRegMailWithToken } from '@/transporter';
 import { TRegister } from '@/utils/types';
 import {
   checkFields,
+  createNewProfile,
   createNewUser,
+  createToken,
   CustomError,
   ERROR_MESSAGE,
-} from '@/utils/utils';
-import { randomUUID } from 'crypto';
+  verifyToken,
+} from '@/utils/service';
 import { RequestHandler } from 'express';
+import {
+  checkEmailForSame,
+  createEmail,
+  deleteEmail,
+  verifyEmail,
+} from '@/db/emails/emails';
+import { deleteUser, getNextUserID } from '@/db/users/users';
+import { createPassword, deletePassword } from '@/db/passwords/passwords';
 
+// Перый этап регистрации
 export const regCheckFields: RequestHandler = async (req, res, next) => {
   const user: TRegister = req.body;
   const checkBody = checkFields(user, ['email', 'password', 'username']);
@@ -27,11 +30,12 @@ export const regCheckFields: RequestHandler = async (req, res, next) => {
     next();
   }
 };
-
 export const regCheckForSameEmail: RequestHandler = async (req, res, next) => {
   const { email }: TRegister = req.body;
+
   try {
     const result = await checkEmailForSame(email);
+
     if (result) {
       CustomError(res, 404, 'Пользователь с такой почтой уже существует.');
     } else {
@@ -41,37 +45,48 @@ export const regCheckForSameEmail: RequestHandler = async (req, res, next) => {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
 };
-
-export const regSendMail: RequestHandler = async (req, res, next) => {
-  const { email }: TRegister = req.body;
-  const key = randomUUID();
+export const regCreateTokenAndSendMail: RequestHandler = async (req, res) => {
   try {
-    const emails = await getEmails();
-    await writeEmails([
-      ...emails,
-      { verify: false, email: email, key: { key: key, createdAt: Date.now() } },
-    ]);
-    const info = await sendVerifyMail([email], key);
+    const { email, password, username }: TRegister = req.body;
+    const id = await getNextUserID();
+    const token = createToken({ id: id, username: username }, 5 * 60);
+    await createEmail(id, email);
+    await createPassword(email, password);
+    await createNewUser(id, email, username);
+    const info = await sendRegMailWithToken([email], token);
+
     if (info) {
-      next();
+      res
+        .status(200)
+        .send({ status: true, data: 'Пожалуйста, подтвердите почту.' });
     } else {
-      throw new Error('Письмо вернуло void!');
+      deleteEmail(id);
+      deletePassword(id);
+      deleteUser(id);
+      CustomError(
+        res,
+        500,
+        `Письмо не удалось отправить на почту ${email}. Пожалуйста, попробуйте позже.`,
+      );
     }
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
 };
 
-export const regUser: RequestHandler = async (req, res) => {
-  const { username, email, password }: TRegister = req.body;
+// Второй этап регистрации
+export const regCheckToken: RequestHandler = async (req, res) => {
+  const token = req.params.key;
+
   try {
-    const id = await getNextUserID();
-    const newUser = createNewUser(id, username, email);
+    const { id, username } = await verifyToken<{
+      id: string;
+      username: string;
+    }>(token);
+    await verifyEmail(id);
+    await createNewProfile(id, username);
 
-    await writeUser(newUser);
-    await writePassword(email, password);
-
-    res.status(200).send({ status: true, data: newUser });
+    res.redirect('/login');
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }

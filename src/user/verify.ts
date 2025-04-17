@@ -1,27 +1,30 @@
-import { getCodes, getEmails, getUsers, writeEmails } from '@/db/db';
 import { TLogin } from '@/utils/types';
-import { BASE_URL, CustomError, ERROR_MESSAGE } from '@/utils/utils';
-import { randomUUID } from 'crypto';
+import { createToken, CustomError, ERROR_MESSAGE } from '@/utils/service';
 import { RequestHandler } from 'express';
+import { deleteCode, findCode, getCodes } from '@/db/codes/codes';
+import { getUserByID } from '@/db/users/users';
+import {
+  getVerifyEmails,
+  setVerifyEmails,
+} from '@/db/verifyEmails/verifyEmails';
+import { getEmailByEmail, verifyEmail } from '@/db/emails/emails';
+import { resAuthUser } from './utils';
 
 export const emailVerify: RequestHandler = async (req, res) => {
   const { key } = req.params;
 
   if (key) {
     try {
-      const emails = await getEmails();
-      const email = emails.find((item) =>
-        item.key ? item.key.key == key : false,
-      );
+      const emails = await getVerifyEmails();
+      const email = emails.find((item) => item.key === key);
 
       if (email) {
-        if (email.key!.createdAt + 7200000 > Date.now()) {
-          email.verify = true;
-          const newEmails = emails.filter((item) => item.email !== email.email);
-          delete email.key;
-          await writeEmails([...newEmails, email]);
-          res.redirect(BASE_URL);
+        if (email.createdAt < Date.now() + 5 * 60 * 1000) {
+          await verifyEmail(email.email);
+          await setVerifyEmails(emails.filter((item) => item.key !== key));
+          res.status(200).send({ status: true, data: 'Почта подтверждена.' });
         } else {
+          await setVerifyEmails(emails.filter((item) => item.key !== key));
           CustomError(res, 404, 'Ссылка не действительна.');
         }
       } else {
@@ -29,37 +32,32 @@ export const emailVerify: RequestHandler = async (req, res) => {
       }
     } catch (err) {
       CustomError(res, 500, ERROR_MESSAGE, err);
-      if (typeof err == 'string') {
-        throw new Error(err);
-      }
     }
   } else {
-    CustomError(res, 404, 'Токен не был обнаружен.');
+    CustomError(res, 404, 'Токен не найден.');
   }
 };
 
 export const codeVerify: RequestHandler = async (req, res) => {
-  const data: TLogin & { code: number } = req.body;
+  const { email, code }: TLogin & { code: number } = req.body;
 
   try {
-    const codes = await getCodes();
-    const users = await getUsers();
-    const user = users.find(
-      (item) => item.email === codes[data.code.toString()],
-    );
+    const currentCode = await findCode(code);
 
-    if (user && user.email === data.email) {
-      res
-        .status(200)
-        .cookie('accessToken', randomUUID(), {
-          maxAge: Date.now() + 120000,
-        })
-        .send({
-          status: true,
-          data: { refreshToken: randomUUID(), user: user },
-        });
+    if (currentCode) {
+      const currentEmail = await getEmailByEmail(email);
+
+      if (currentEmail) {
+        await deleteCode(code);
+        await resAuthUser(res, currentEmail._id);
+      } else {
+        console.error(
+          `${email} не был найден в базе данных, но на данную почту был отправлен код верификации!`,
+        );
+        CustomError(res, 404, 'Такого аккаунта не существует.');
+      }
     } else {
-      CustomError(res, 404, 'Почта или пароль неверны.');
+      CustomError(res, 404, 'Код не найден.');
     }
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);

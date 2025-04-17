@@ -1,4 +1,3 @@
-import { checkEmailForSame, getPasswords, writeCode } from '@/db/db';
 import { sendAuthVerifyMail } from '@/transporter';
 import { TLogin } from '@/utils/types';
 import * as bcrypt from 'bcrypt';
@@ -7,8 +6,11 @@ import {
   CustomError,
   ERROR_MESSAGE,
   getRandomCode,
-} from '@/utils/utils';
+} from '@/utils/service';
 import { RequestHandler } from 'express';
+import { checkEmailForSame } from '@/db/emails/emails';
+import { getPasswords } from '@/db/passwords/passwords';
+import { createCode } from '@/db/codes/codes';
 
 export const authCheckFields: RequestHandler = (req, res, next) => {
   const user: TLogin = req.body;
@@ -69,7 +71,7 @@ export const authSendMail: RequestHandler = async (req, res) => {
     if (!info) {
       throw new Error('Письмо вернуло void!');
     }
-    await writeCode(email, code);
+    await createCode(email, code);
     res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);

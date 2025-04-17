@@ -2,11 +2,11 @@ import express from 'express';
 import {
   regCheckFields,
   regCheckForSameEmail,
-  regSendMail,
-  regUser,
+  regCheckToken,
+  regCreateTokenAndSendMail,
 } from './user/reg';
-import { codeVerify, emailVerify } from './user/verify';
-import { getUser, getUserCheck } from './user/utils';
+import { codeVerify } from './user/verify';
+import { getProfile, getUserCheck, resAuthUser } from './user/utils';
 import {
   authCheckFields,
   authEmailCheck,
@@ -14,6 +14,7 @@ import {
   authSendMail,
 } from './user/auth';
 import cors from 'cors';
+import { CustomError, verifyToken } from './utils/service';
 export const app = express();
 
 app.use(express.json());
@@ -29,8 +30,24 @@ app.get('/api', (req, res) => {
 
 // ---USER---
 // get
+app.use('/api/users/:id', (req, res, next) => {
+  const auth = req.headers.authorization;
+
+  if (!auth) {
+    CustomError(res, 401, 'Доступ запрещён.');
+  } else {
+    try {
+      verifyToken<{ id: string }>(auth);
+      next();
+    } catch (err) {
+      // МОЖЕТ БЫТЬ ОШИБКА ПОДЛЕННОСТИ
+      console.log(err);
+      CustomError(res, 401, 'Ошибка аутентификации.', err);
+    }
+  }
+});
 app.use('/api/users/:id', getUserCheck);
-app.get('/api/users/:id', getUser);
+app.get('/api/users/:id', getProfile);
 // auth
 app.use('/api/auth', authCheckFields);
 app.use('/api/auth', authEmailCheck);
@@ -39,8 +56,7 @@ app.post('/api/auth', authSendMail);
 // registration
 app.use('/api/users', regCheckFields);
 app.use('/api/users', regCheckForSameEmail);
-app.use('/api/users', regSendMail);
-app.post('/api/users', regUser);
+app.post('/api/users', regCreateTokenAndSendMail);
 // verify
-app.get('/api/v/:key', emailVerify);
-app.post('/api/v/auth', codeVerify);
+app.get('/api/v/r/:key', regCheckToken);
+app.post('/api/v/', codeVerify);
