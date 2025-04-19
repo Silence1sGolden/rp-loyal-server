@@ -1,35 +1,34 @@
-import { TUser } from '@/utils/types';
 import { Config, JsonDB } from 'node-json-db';
+import { TProfile } from './types';
+import { UUID } from 'crypto';
 
 const usersDB = new JsonDB(new Config('./src/db/users/db', true, false, '/'));
 
-export const getUsers = async (): Promise<TUser[]> => {
+export const getUsers = async (): Promise<TProfile[]> => {
   return await usersDB.getData('/users');
 };
 
-export const setUsers = async (users: TUser[]): Promise<void> => {
+export const setUsers = async (users: TProfile[]): Promise<void> => {
   return await usersDB.push('/users', users);
 };
 
-export const getUserByID = async (id: string): Promise<TUser | undefined> => {
-  return await usersDB.getData('/users').then((users: TUser[]) => {
+export const getUserByID = async (id: UUID): Promise<TProfile | undefined> => {
+  return await getUsers().then((users) => {
     return users.find((item) => item._id === id);
   });
 };
 
-export const createUser = async (user: TUser): Promise<void> => {
-  return await usersDB.getData('/users').then(async (users: TUser[]) => {
-    return await usersDB.push('/users', [...users, user]);
+export const createUser = async (user: TProfile): Promise<void> => {
+  return await getUsers().then(async (users) => {
+    if (Boolean(...users)) {
+      return await setUsers([...users, user]);
+    } else {
+      return await setUsers([user]);
+    }
   });
 };
 
-export const getNextUserID = async (): Promise<string> => {
-  return await usersDB.getData('/users').then((users: TUser[]) => {
-    return '0'.repeat(10 - (users.length + '').length) + (users.length + 1);
-  });
-};
-
-export const deleteUser = async (id: string): Promise<void> => {
+export const deleteUser = async (id: UUID): Promise<void> => {
   return await getUsers().then(async (users) => {
     return await setUsers(users.filter((item) => item._id !== id));
   });

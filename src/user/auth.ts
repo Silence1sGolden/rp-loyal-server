@@ -8,71 +8,78 @@ import {
   getRandomCode,
 } from '@/utils/service';
 import { RequestHandler } from 'express';
-import { checkEmailForSame } from '@/db/emails/emails';
-import { getPasswords } from '@/db/passwords/passwords';
-import { createCode } from '@/db/codes/codes';
+import { getPasswordByEmail } from '@/db/passwords/passwords';
+import { createCode, deleteCode, findCode } from '@/db/codes/codes';
+import { resAuthUser } from './utils';
+import { getIDByEmail } from '@/db/emails/emails';
 
-export const authCheckFields: RequestHandler = (req, res, next) => {
+export const authUser: RequestHandler = async (req, res) => {
   const user: TLogin = req.body;
   const check = checkFields(user, ['email', 'password']);
+
   if (check) {
-    CustomError(res, 404, check);
-  } else {
-    next();
+    return CustomError(res, 400, check);
   }
-};
 
-export const authEmailCheck: RequestHandler = async (req, res, next) => {
-  const { email }: TLogin = req.body;
+  const encrypted = await getPasswordByEmail(user.email);
+
+  if (!encrypted) {
+    return CustomError(res, 401, 'Аккаунта с такой почтой не существует.');
+  }
+
+  if (!(await bcrypt.compare(user.password, encrypted))) {
+    return CustomError(res, 401, 'Почта или пароль неверны.');
+  }
 
   try {
-    const result = await checkEmailForSame(email);
-    if (result) {
-      next();
-    } else {
-      CustomError(res, 404, 'Аккаунта с такой почтой не существует.');
+    const code = getRandomCode();
+    const id = await getIDByEmail(user.email);
+
+    if (!id) {
+      return CustomError(
+        res,
+        500,
+        `Пользователя с почтой ${user.email} не существует.`,
+        new Error(
+          `Расхождения в базах данных: ${user} не был найден в базе данных EMAILS`,
+        ),
+      );
     }
-  } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
-    if (typeof err == 'string') {
-      throw new Error(err);
-    }
-  }
-};
 
-export const authPasswordCheck: RequestHandler = async (req, res, next) => {
-  const { email, password }: TLogin = req.body;
+    const info = await sendAuthVerifyMail([user.email], code);
 
-  try {
-    const passwords = await getPasswords();
-    const encrypted = passwords[email];
-    if (encrypted) {
-      const result = await bcrypt.compare(password, encrypted);
-
-      if (result) {
-        next();
-      } else {
-        CustomError(res, 404, 'Почта или пароль неверны.');
-      }
-    } else {
-      throw new Error('Аккаунт создан без записи в базе паролей!');
-    }
-  } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
-  }
-};
-
-export const authSendMail: RequestHandler = async (req, res) => {
-  const { email }: TLogin = req.body;
-  const code = getRandomCode();
-
-  try {
-    const info = await sendAuthVerifyMail([email], code);
     if (!info) {
-      throw new Error('Письмо вернуло void!');
+      return CustomError(
+        res,
+        500,
+        `Письмо не удалось отправить на почту ${user.email}. Пожалуйста, попробуйте позже.`,
+      );
     }
-    await createCode(email, code);
+
+    await createCode(id, code, req.body);
     res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
+  } catch (err) {
+    CustomError(res, 500, ERROR_MESSAGE, err);
+  }
+};
+
+export const authCodeVerify: RequestHandler = async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const codeData = await findCode(code);
+
+    if (!codeData) {
+      return CustomError(res, 401, 'Код не найден.');
+    }
+
+    if (codeData.createdAt + 5 * 60 * 1000 < Date.now()) {
+      await deleteCode(code);
+      return CustomError(res, 401, 'Код не действителен.');
+    }
+
+    await deleteCode(code);
+    return await resAuthUser(res, codeData._id);
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }

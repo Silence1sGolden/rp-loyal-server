@@ -1,7 +1,7 @@
 import { app } from './app';
 import { clearCodes } from './utils/service';
 
-const base_url = process.cwd();
+// const base_url = process.cwd();
 // const options: ServerOptions = {
 //   key: fs.readFileSync(base_url + '/cert/localhost.key'),
 //   cert: fs.readFileSync(base_url + '/cert/localhost.crt'),

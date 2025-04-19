@@ -1,7 +1,8 @@
 import { createToken, CustomError, ERROR_MESSAGE } from '@/utils/service';
 import { RequestHandler, Response } from 'express';
 import { getUserByID } from '@/db/users/users';
-import { getEmailByID } from '@/db/emails/emails';
+import { createSession } from '@/db/sessions/sessions';
+import { UUID } from 'crypto';
 
 export const getUserCheck: RequestHandler = (req, res, next) => {
   const id = req.params.id;
@@ -13,7 +14,7 @@ export const getUserCheck: RequestHandler = (req, res, next) => {
 };
 
 export const getProfile: RequestHandler = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.id as UUID;
 
   try {
     const user = await getUserByID(id);
@@ -28,30 +29,22 @@ export const getProfile: RequestHandler = async (req, res) => {
   }
 };
 
-export const resAuthUser = async (res: Response, id: string) => {
-  try {
-    const email = await getEmailByID(id);
-    const user = await getUserByID(id);
-    const accessToken = createToken({ id }, 5 * 60);
-    const refreshToken = createToken({ id }, 60 * 60 * 24 * 2);
-    email!.active = {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    };
+export const resAuthUser = async (res: Response, id: UUID) => {
+  const user = await getUserByID(id);
+  const accessToken = createToken({ id }, 5 * 60);
+  const refreshToken = createToken({ id }, 60 * 60 * 24 * 2);
+  await createSession(id, accessToken, refreshToken);
 
-    res
-      .cookie('accessToken', accessToken, {
-        maxAge: Date.now() + 5 * 60 * 1000,
-      })
-      .status(200)
-      .send({
-        status: true,
-        data: {
-          refreshToken: refreshToken,
-          user: user,
-        },
-      });
-  } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
-  }
+  res
+    .cookie('accessToken', accessToken, {
+      maxAge: Date.now() + 5 * 60 * 1000,
+    })
+    .status(200)
+    .send({
+      status: true,
+      data: {
+        refreshToken: refreshToken,
+        user: user,
+      },
+    });
 };

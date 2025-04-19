@@ -1,8 +1,9 @@
 import { Response } from 'express';
-import { TProfile, TUser } from './types';
 import * as dotenv from 'dotenv';
 import { deleteCode, getCodes } from '@/db/codes/codes';
 import jwt, { Secret } from 'jsonwebtoken';
+import { TProfile } from '@/db/users/types';
+import { UUID } from 'crypto';
 
 dotenv.config();
 export const BASE_URL = process.env.BASE_URL || 'http://192.168.1.100:443';
@@ -22,12 +23,12 @@ export function CustomError(
   devError?: Error | string | unknown,
 ) {
   if (resErrorCode && resErrorText) {
-    res.status(resErrorCode).json({ message: resErrorText });
+    res.status(resErrorCode).send({ error: resErrorText });
     if (resErrorCode >= 500) {
       throw new Error(`ОШИБКА ${resErrorCode}: ${devError}`);
     }
   } else {
-    res.status(505).json({ message: resErrorText });
+    res.status(505).send({ error: resErrorText });
     throw new Error(`ОШИБКА 505: ${devError}`);
   }
 }
@@ -47,7 +48,7 @@ export function checkFields<T>(obj: T, fields: (keyof T)[]): string | null {
   return null;
 }
 
-export function createNewProfile(id: string, useranme: string): TProfile {
+export function createNewProfile(id: UUID, useranme: string): TProfile {
   return {
     _id: id,
     username: useranme,
@@ -61,18 +62,6 @@ export function createNewProfile(id: string, useranme: string): TProfile {
     status: '',
     likesTags: [],
     forms: [],
-  };
-}
-
-export function createNewUser(
-  id: string,
-  email: string,
-  username: string,
-): TUser {
-  return {
-    _id: id,
-    email: email,
-    username: username,
   };
 }
 

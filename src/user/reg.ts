@@ -1,92 +1,83 @@
-import { sendRegMailWithToken } from '@/transporter';
+import { sendAuthVerifyMail } from '@/transporter';
 import { TRegister } from '@/utils/types';
 import {
   checkFields,
   createNewProfile,
-  createNewUser,
-  createToken,
   CustomError,
   ERROR_MESSAGE,
-  verifyToken,
+  getRandomCode,
 } from '@/utils/service';
 import { RequestHandler } from 'express';
-import {
-  checkEmailForSame,
-  createEmail,
-  deleteEmail,
-  verifyEmail,
-} from '@/db/emails/emails';
-import { deleteUser, getNextUserID } from '@/db/users/users';
-import { createPassword, deletePassword } from '@/db/passwords/passwords';
+import { createUser } from '@/db/users/users';
+import { createPassword, getPasswordByEmail } from '@/db/passwords/passwords';
+import { createCode, deleteCode, findCode } from '@/db/codes/codes';
+import { resAuthUser } from './utils';
+import { randomUUID } from 'crypto';
+import { createEmail } from '@/db/emails/emails';
 
-// Перый этап регистрации
-export const regCheckFields: RequestHandler = async (req, res, next) => {
+export const regUser: RequestHandler = async (req, res) => {
   const user: TRegister = req.body;
   const checkBody = checkFields(user, ['email', 'password', 'username']);
 
   if (checkBody) {
-    CustomError(res, 400, checkBody);
-  } else {
-    next();
+    return CustomError(res, 400, checkBody);
   }
-};
-export const regCheckForSameEmail: RequestHandler = async (req, res, next) => {
-  const { email }: TRegister = req.body;
 
   try {
-    const result = await checkEmailForSame(email);
-
-    if (result) {
-      CustomError(res, 404, 'Пользователь с такой почтой уже существует.');
-    } else {
-      next();
-    }
-  } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
-  }
-};
-export const regCreateTokenAndSendMail: RequestHandler = async (req, res) => {
-  try {
-    const { email, password, username }: TRegister = req.body;
-    const id = await getNextUserID();
-    const token = createToken({ id: id, username: username }, 5 * 60);
-    await createEmail(id, email);
-    await createPassword(email, password);
-    await createNewUser(id, email, username);
-    const info = await sendRegMailWithToken([email], token);
-
-    if (info) {
-      res
-        .status(200)
-        .send({ status: true, data: 'Пожалуйста, подтвердите почту.' });
-    } else {
-      deleteEmail(id);
-      deletePassword(id);
-      deleteUser(id);
-      CustomError(
+    if (await getPasswordByEmail(user.email)) {
+      return CustomError(
         res,
-        500,
-        `Письмо не удалось отправить на почту ${email}. Пожалуйста, попробуйте позже.`,
+        401,
+        'Пользователь с такой почтой уже существует.',
       );
     }
+
+    const id = randomUUID();
+    const code = getRandomCode();
+
+    await createCode(id, code, {
+      email: user.email,
+      password: user.password,
+      username: user.username,
+    });
+
+    const info = await sendAuthVerifyMail([user.email], code);
+
+    if (!info) {
+      return CustomError(
+        res,
+        500,
+        `Письмо не удалось отправить на почту ${user.email}. Пожалуйста, попробуйте позже.`,
+      );
+    }
+    res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
 };
 
-// Второй этап регистрации
-export const regCheckToken: RequestHandler = async (req, res) => {
-  const token = req.params.key;
+export const regCodeVerify: RequestHandler = async (req, res) => {
+  const { code } = req.body;
 
   try {
-    const { id, username } = await verifyToken<{
-      id: string;
-      username: string;
-    }>(token);
-    await verifyEmail(id);
-    await createNewProfile(id, username);
+    const user = await findCode(code);
 
-    res.redirect('/login');
+    if (!user) {
+      return CustomError(res, 401, 'Код не действителен.', '!user');
+    }
+
+    if (user.createdAt + 5 * 60 * 1000 < Date.now()) {
+      return CustomError(res, 401, 'Код не действителен.', 'createdAt');
+    }
+
+    const { _id, username, email, password } = user;
+    const profile = createNewProfile(_id, username!);
+
+    await createPassword(email!, password!);
+    await createUser(profile);
+    await createEmail(user.email!, user._id);
+    await deleteCode(code);
+    await resAuthUser(res, _id);
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }

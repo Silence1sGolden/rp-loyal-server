@@ -1,23 +1,13 @@
 import express from 'express';
-import {
-  regCheckFields,
-  regCheckForSameEmail,
-  regCheckToken,
-  regCreateTokenAndSendMail,
-} from './user/reg';
-import { codeVerify } from './user/verify';
+import { regCodeVerify, regUser } from './user/reg';
 import { getProfile, getUserCheck } from './user/utils';
-import {
-  authCheckFields,
-  authEmailCheck,
-  authPasswordCheck,
-  authSendMail,
-} from './user/auth';
+import { authCodeVerify, authUser } from './user/auth';
 import cors from 'cors';
-import { CustomError, verifyToken } from './utils/service';
+import { CustomError, ERROR_MESSAGE, verifyToken } from './utils/service';
 export const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get('/', (req, res) => {
@@ -34,29 +24,35 @@ app.use('/api/users/:id', (req, res, next) => {
   const auth = req.headers.authorization;
 
   if (!auth) {
-    CustomError(res, 401, 'Доступ запрещён.');
-  } else {
-    try {
-      verifyToken<{ id: string }>(auth);
-      next();
-    } catch (err) {
-      // МОЖЕТ БЫТЬ ОШИБКА ПОДЛЕННОСТИ
-      console.log(err);
-      CustomError(res, 401, 'Ошибка аутентификации.', err);
-    }
+    return CustomError(res, 401, 'Доступ запрещён.');
   }
+
+  try {
+    verifyToken(auth);
+  } catch (error) {
+    const err = error as Error;
+
+    if (err.message === 'jwt expired') {
+      return CustomError(res, 400, 'Данные некорректны.');
+    }
+
+    if (err.message === 'invalid signature') {
+      // TODO
+      // сделать отправку сообщения на почту о том,
+      // что в аккаунт пытаются войти
+      return CustomError(res, 500, ERROR_MESSAGE, err);
+    }
+
+    return CustomError(res, 500, ERROR_MESSAGE, err);
+  }
+  next();
 });
 app.use('/api/users/:id', getUserCheck);
 app.get('/api/users/:id', getProfile);
 // auth
-app.use('/api/auth', authCheckFields);
-app.use('/api/auth', authEmailCheck);
-app.use('/api/auth', authPasswordCheck);
-app.post('/api/auth', authSendMail);
+app.post('/api/auth', authUser);
 // registration
-app.use('/api/users', regCheckFields);
-app.use('/api/users', regCheckForSameEmail);
-app.post('/api/users', regCreateTokenAndSendMail);
+app.post('/api/users', regUser);
 // verify
-app.get('/api/v/r/:key', regCheckToken);
-app.post('/api/v/', codeVerify);
+app.post('/api/v/reg', regCodeVerify);
+app.post('/api/v/auth', authCodeVerify);

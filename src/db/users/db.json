@@ -1,1 +1,13 @@
-{ "users": [] }
+{
+  "users": [
+    {
+      "_id": "56e8a702-9aab-419c-b616-692aa356530a",
+      "profileIMG": "",
+      "about": "",
+      "stats": { "likes": [], "fans": [], "rewards": [] },
+      "status": "",
+      "likesTags": [],
+      "forms": []
+    }
+  ]
+}
