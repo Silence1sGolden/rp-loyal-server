@@ -15,7 +15,6 @@ import {
 } from './user/auth';
 import cors from 'cors';
 import { CustomError, verifyToken } from './utils/service';
-import { sendAuthVerifyMail, sendRegMailWithToken } from './transporter';
 export const app = express();
 
 app.use(express.json());
@@ -61,5 +60,3 @@ app.post('/api/users', regCreateTokenAndSendMail);
 // verify
 app.get('/api/v/r/:key', regCheckToken);
 app.post('/api/v/', codeVerify);
-
-sendAuthVerifyMail(['posikunets999@gmail.com', 'posikunets@yandex.ru'], 543654);

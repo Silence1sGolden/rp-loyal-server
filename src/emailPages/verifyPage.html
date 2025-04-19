@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Piazzolla:ital,opsz,wght@0,8..30,100..900;1,8..30,100..900&display=swap');
+
+      * {
+        margin: 0px;
+        padding: 0px;
+        border: none;
+        box-sizing: border-box;
+        color: #cccccc;
+        font-weight: 200;
+      }
+
+      .container {
+        width: 100vw;
+        height: 100vh;
+        background-color: #191919;
+        -moz-transition: background-color 0.8s;
+        transition: background-color 0.8s;
+      }
+
+      .table {
+        margin: auto;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #292929;
+        max-width: 450px;
+        width: 100%;
+        -moz-transition:
+          border 0.8s,
+          background-color 0.8s;
+        transition:
+          border 0.8s,
+          background-color 0.8s;
+      }
+
+      .title {
+        font-family: 'Piazzolla', serif;
+        font-size: 34px;
+        font-weight: 700;
+        color: #ccc;
+        -moz-transition: color 0.8s;
+        transition: color 0.8s;
+      }
+
+      .subtitle {
+        font-family: 'Piazzolla', serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #ccc;
+        -moz-transition: color 0.8s;
+        transition: color 0.8s;
+      }
+
+      .link {
+        font-family: 'Piazzolla', serif;
+        font-size: 14px;
+        font-weight: 400;
+        background-color: transparent;
+        color: rgb(52, 214, 52);
+        text-decoration: none;
+        text-align: center;
+        -moz-transition:
+          color 0.8s,
+          text-shadow 0.8s;
+        transition:
+          color 0.8s,
+          text-shadow 0.8s;
+      }
+
+      .link:hover {
+        cursor: pointer;
+        text-shadow: 0px 0px 10px rgb(52, 214, 52);
+      }
+
+      .td {
+        background-color: transparent;
+        position: relative;
+        padding: 10px 10px;
+      }
+
+      .message {
+        font-family: 'Piazzolla', serif;
+        font-size: 14px;
+        font-weight: 200;
+        color: #cccccc;
+        padding: 10px;
+        border-radius: 15px;
+        background-color: #292929;
+        -moz-transition:
+          color 0.8s,
+          background-color 0.8s;
+        transition:
+          color 0.8s,
+          background-color 0.8s;
+      }
+
+      .message_first {
+        padding-top: 0px;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+      }
+
+      .author {
+        font-family: 'Piazzolla', serif;
+        font-size: 14px;
+        font-weight: 400;
+        width: 100%;
+        padding: 3px 7px;
+        padding-bottom: 0px;
+        color: #d14d4d;
+        background-color: #292929;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        -moz-transition:
+          color 0.8s,
+          background-color 0.8s;
+        transition:
+          color 0.8s,
+          background-color 0.8s;
+      }
+
+      .t_left {
+        text-align: start;
+      }
+
+      .t_right {
+        text-align: end;
+      }
+
+      .msg {
+        width: 100%;
+        filter: none !important;
+      }
+
+      .img {
+        margin-top: auto;
+        margin-bottom: 10px;
+        object-fit: contain;
+        object-position: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 100px;
+        box-shadow: 0px 0px 10px #ffffff;
+        -moz-transition:
+          outline 0.8s,
+          box-shadow 0.8s;
+        transition:
+          outline 0.8s,
+          box-shadow 0.8s;
+      }
+
+      @media (prefers-color-scheme: light) {
+        .container {
+          background-color: #fff;
+        }
+
+        .title {
+          color: #000;
+        }
+
+        .img {
+          outline: 1px solid #000;
+          box-shadow: 0px 0px 10px #000;
+          filter: none !important;
+        }
+
+        .table {
+          background-color: #ffffff;
+        }
+
+        .message,
+        .author {
+          background-color: #efefef;
+          color: #000;
+        }
+
+        .author {
+          color: #d14d4d;
+        }
+
+        .link {
+          color: rgb(23, 199, 23);
+        }
+      }
+
+      .vertical {
+        vertical-align: bottom;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <table class="table">
+        <tbody class="tbody">
+          <tr align="center">
+            <td style="border-bottom: 1px solid #cccccc" colspan="3">
+              <h1 class="title">RP-loyal</h1>
+            </td>
+          </tr>
+          <tr>
+            <td width="50" class="vertical">
+              <img
+                class="img img_l"
+                width="50"
+                height="50"
+                src="https://i.pinimg.com/736x/80/7a/48/807a48790f4cab320ebcec6a33614d33.jpg"
+                alt="mute"
+              />
+            </td>
+            <td align="left" class="td" colspan="2" class="">
+              <table class="msg msg_r">
+                <tbody>
+                  <tr>
+                    <td>
+                      <p class="author t_left">Mute</p>
+                      <p class="message message_first t_left">
+                        Привет! Я - mute, и я с радостью поздравляю тебя со
+                        вступлением в нашу дружную семью.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <p class="message t_left">
+                        А перед началом, лучше всего подтвердить свою почту,
+                        чтоб у тебя появилась возможность восстановить свой
+                        аккаунт или изменить пароль в будущем.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <p class="message t_left">Вдруг что-то произойдёт...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="td" colspan="2" align="right">
+              <table class="msg msg_l">
+                <tbody>
+                  <tr>
+                    <td>
+                      <p class="author t_right">Пользователь</p>
+                      <p class="message message_first t_right">
+                        Ох уж эта дурацкая тема с подтверждением...
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+            <td align="right" width="50" class="vertical">
+              <img
+                class="img"
+                width="50"
+                height="50"
+                src="https://i.pinimg.com/736x/bd/e9/81/bde981ce4d24ffdea7b177c549566c43.jpg"
+                alt="kitty"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td align="left" width="50" class="vertical">
+              <img
+                class="img img_l"
+                width="50"
+                height="50"
+                src="https://i.pinimg.com/736x/80/7a/48/807a48790f4cab320ebcec6a33614d33.jpg"
+                alt="mute"
+              />
+            </td>
+            <td class="td" colspan="2" align="left">
+              <table class="msg msg_r">
+                <tbody>
+                  <tr>
+                    <td>
+                      <p class="author t_left">Mute</p>
+                      <p class="message message_first t_left">
+                        Это не конец света, так что
+                        <a class="link" href="${BASE_URL}/api/v/r/${token}"
+                          >подтверди</a
+                        >
+                        свою почту и гуляй смело, зато после ещё спасибо
+                        скажешь)
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
