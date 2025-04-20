@@ -369,3 +369,27 @@ export async function sendAuthVerifyMail(
     `,
   });
 }
+
+export async function sendAlertMail(
+  to: string[],
+  data?: string,
+): Promise<void | SMTPTransport.SentMessageInfo> {
+  return await transporter.sendMail({
+    from: '"RP-loyal.official" <rployal.official@mail.ru>',
+    to: to,
+    subject: 'Попытка авторизации',
+    text: 'Предупреждение',
+    html: `<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    </head>
+    <body>
+        <p>В ваш аккаунт пытались войти, если это не вы, то обязательно сообщите об этом в поддержку.</p>
+        ${data}
+    </body>
+    </html>`,
+  });
+}

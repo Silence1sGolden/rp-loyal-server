@@ -1,3 +1,3 @@
 import { UUID } from 'crypto';
 
-export type TEmail = Record<string, UUID>;
+export type TEmail = { email: string; id: UUID };

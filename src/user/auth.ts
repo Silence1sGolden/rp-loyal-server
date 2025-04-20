@@ -11,7 +11,7 @@ import { RequestHandler } from 'express';
 import { getPasswordByEmail } from '@/db/passwords/passwords';
 import { createCode, deleteCode, findCode } from '@/db/codes/codes';
 import { resAuthUser } from './utils';
-import { getIDByEmail } from '@/db/emails/emails';
+import { getEmailByEmail } from '@/db/emails/emails';
 
 export const authUser: RequestHandler = async (req, res) => {
   const user: TLogin = req.body;
@@ -33,9 +33,9 @@ export const authUser: RequestHandler = async (req, res) => {
 
   try {
     const code = getRandomCode();
-    const id = await getIDByEmail(user.email);
+    const email = await getEmailByEmail(user.email);
 
-    if (!id) {
+    if (!email) {
       return CustomError(
         res,
         500,
@@ -56,7 +56,7 @@ export const authUser: RequestHandler = async (req, res) => {
       );
     }
 
-    await createCode(id, code, req.body);
+    await createCode(email.id, code, req.body);
     res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);

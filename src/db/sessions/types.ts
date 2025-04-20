@@ -1,6 +1,8 @@
-export type TSession = Record<string, TSessionTokens>;
+import { UUID } from 'crypto';
 
-export type TSessionTokens = {
-  accessToken: string;
-  refreshToken: string;
+export type TSession = {
+  id: UUID;
+  sessionID: UUID;
+  key: UUID;
+  deathTime: number;
 };
