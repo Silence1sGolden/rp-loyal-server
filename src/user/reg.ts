@@ -75,7 +75,7 @@ export const regCodeVerify: RequestHandler = async (req, res) => {
 
     await createPassword(email!, password!);
     await createUser(profile);
-    await createEmail(user.email!, user._id);
+    await createEmail({ email: user.email!, id: user._id });
     await deleteCode(code);
     await resAuthUser(res, _id);
   } catch (err) {

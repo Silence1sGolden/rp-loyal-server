@@ -25,11 +25,11 @@ export function CustomError(
   if (resErrorCode && resErrorText) {
     res.status(resErrorCode).send({ error: resErrorText });
     if (resErrorCode >= 500) {
-      throw new Error(`ОШИБКА ${resErrorCode}: ${devError}`);
+      console.error(`ОШИБКА ${resErrorCode}: ${devError}`);
     }
   } else {
     res.status(505).send({ error: resErrorText });
-    throw new Error(`ОШИБКА 505: ${devError}`);
+    console.error(`ОШИБКА 505: ${devError}`);
   }
 }
 
@@ -85,11 +85,16 @@ export const clearCodes = async () => {
 
 export const createToken = <T extends object>(
   payload: T,
+  key: UUID,
   expriresIn: number,
 ): string => {
-  return jwt.sign(payload, SECRET, { expiresIn: expriresIn });
+  return jwt.sign(payload, key, { expiresIn: expriresIn });
 };
 
-export const verifyToken = <T>(token: string): T => {
-  return jwt.verify(token, SECRET) as T;
+export const verifyToken = <T>(token: string, key: UUID): T => {
+  return jwt.verify(token, key) as T;
+};
+
+export const getTokenPayload = <T>(token: string): T => {
+  return jwt.decode(token) as T;
 };

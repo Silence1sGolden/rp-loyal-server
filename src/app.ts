@@ -1,9 +1,16 @@
 import express from 'express';
 import { regCodeVerify, regUser } from './user/reg';
-import { getProfile, getUserCheck } from './user/utils';
+import { getProfile, refreshSession } from './user/utils';
 import { authCodeVerify, authUser } from './user/auth';
 import cors from 'cors';
-import { CustomError, ERROR_MESSAGE, verifyToken } from './utils/service';
+import {
+  CustomError,
+  ERROR_MESSAGE,
+  getTokenPayload,
+  verifyToken,
+} from './utils/service';
+import { getSession } from './db/sessions/sessions';
+import { UUID } from 'crypto';
 export const app = express();
 
 app.use(express.json());
@@ -20,7 +27,7 @@ app.get('/api', (req, res) => {
 
 // ---USER---
 // get
-app.use('/api/users/:id', (req, res, next) => {
+app.use('/api/v/', async (req, res, next) => {
   const auth = req.headers.authorization;
 
   if (!auth) {
@@ -28,12 +35,21 @@ app.use('/api/users/:id', (req, res, next) => {
   }
 
   try {
-    verifyToken(auth);
+    const data = getTokenPayload<{ id: UUID; sessionID: UUID }>(auth);
+    const session = await getSession(data.sessionID);
+
+    if (!session) {
+      return CustomError(res, 401, 'Токен не дейстивтелен.');
+    }
+
+    verifyToken(auth, session.key);
+
+    next();
   } catch (error) {
     const err = error as Error;
 
     if (err.message === 'jwt expired') {
-      return CustomError(res, 400, 'Данные некорректны.');
+      return CustomError(res, 401, 'Токен не дейстивтелен.');
     }
 
     if (err.message === 'invalid signature') {
@@ -45,14 +61,14 @@ app.use('/api/users/:id', (req, res, next) => {
 
     return CustomError(res, 500, ERROR_MESSAGE, err);
   }
-  next();
 });
-app.use('/api/users/:id', getUserCheck);
-app.get('/api/users/:id', getProfile);
+app.get('/api/v/users/:id', getProfile);
 // auth
 app.post('/api/auth', authUser);
 // registration
 app.post('/api/users', regUser);
 // verify
-app.post('/api/v/reg', regCodeVerify);
-app.post('/api/v/auth', authCodeVerify);
+// /api/c(what Confirm)
+app.post('/api/c/reg', regCodeVerify);
+app.post('/api/c/auth', authCodeVerify);
+app.post('/api/refresh', refreshSession);

@@ -1,49 +1,49 @@
 import { Config, JsonDB } from 'node-json-db';
-import { TSession, TSessionTokens } from './types';
+import { TSession } from './types';
+import { UUID } from 'crypto';
 
 const sessionsDB = new JsonDB(
   new Config('./src/db/sessions/db', true, false, '/'),
 );
 
-export const getSessions = async (): Promise<TSession> => {
+export const getSessions = async (): Promise<TSession[]> => {
   return await sessionsDB.getData('/sessions');
 };
 
-export const setSessions = async (sessions: TSession): Promise<void> => {
+export const setSessions = async (sessions: TSession[]): Promise<void> => {
   await sessionsDB.push('/sessions', sessions);
 };
 
-export const getSessionByID = async (
-  id: string,
-): Promise<TSessionTokens | undefined> => {
+export const getSession = async (
+  sessionID: UUID,
+): Promise<TSession | undefined> => {
   return await getSessions().then((sessions) => {
-    return sessions[id];
+    return sessions.find((session) => session.sessionID === sessionID);
   });
 };
 
-export const createSession = async (
-  id: string,
-  accessToken: string,
-  refreshToken: string,
-): Promise<void> => {
+export const createSession = async (data: TSession): Promise<void> => {
   return await getSessions().then(async (sessions) => {
-    sessions[id] = { accessToken: accessToken, refreshToken: refreshToken };
-    return await setSessions(sessions);
+    return await setSessions([...sessions, data]);
   });
 };
 
-export const deleteSession = async (id: string): Promise<void> => {
+export const deleteSession = async (sessionID: UUID): Promise<void> => {
   return await getSessions().then(async (sessions) => {
-    delete sessions[id];
-    return await setSessions(sessions);
+    return await setSessions(
+      sessions.filter((session) => session.sessionID !== sessionID),
+    );
   });
 };
 
 export const updateSession = async (
-  id: string,
-  data: TSessionTokens,
+  sessionID: UUID,
+  data: TSession,
 ): Promise<void> => {
   return await getSessions().then(async (sessions) => {
-    sessions[id] = data;
+    return await setSessions([
+      ...sessions.filter((session) => session.sessionID !== sessionID),
+      data,
+    ]);
   });
 };
