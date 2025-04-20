@@ -1,9 +1,12 @@
-import { Response } from 'express';
+import { NextFunction, RequestHandler, Response } from 'express';
 import * as dotenv from 'dotenv';
 import { deleteCode, getCodes } from '@/db/codes/codes';
 import jwt, { Secret } from 'jsonwebtoken';
 import { TProfile } from '@/db/users/types';
 import { UUID } from 'crypto';
+import { getSession } from '@/db/sessions/sessions';
+import { getEmailByID } from '@/db/emails/emails';
+import { sendAlertMail } from '@/transporter';
 
 dotenv.config();
 export const BASE_URL = process.env.BASE_URL || 'http://192.168.1.100:443';
@@ -24,13 +27,10 @@ export function CustomError(
 ) {
   if (resErrorCode && resErrorText) {
     res.status(resErrorCode).send({ error: resErrorText });
-    if (resErrorCode >= 500) {
-      console.error(`ОШИБКА ${resErrorCode}: ${devError}`);
-    }
   } else {
     res.status(505).send({ error: resErrorText });
-    console.error(`ОШИБКА 505: ${devError}`);
   }
+  devError && console.error(`${resErrorCode}: ${devError}`);
 }
 
 export function checkFields<T>(obj: T, fields: (keyof T)[]): string | null {
@@ -97,4 +97,76 @@ export const verifyToken = <T>(token: string, key: UUID): T => {
 
 export const getTokenPayload = <T>(token: string): T => {
   return jwt.decode(token) as T;
+};
+
+export const verifyTokenWithResponse = async (
+  res: Response,
+  token: string,
+  next?: NextFunction,
+): Promise<void> => {
+  const { id, sessionID } = getTokenPayload<{ id: UUID; sessionID: UUID }>(
+    token,
+  );
+
+  if (!id || !sessionID) {
+    return CustomError(res, 400, 'Токен не содержит необходимой информации.');
+  }
+
+  try {
+    const session = await getSession(sessionID);
+
+    if (!session) {
+      return CustomError(res, 401, 'Токен не дейстивтелен.');
+    }
+
+    jwt.verify(token, session.key);
+
+    if (next) {
+      next();
+    }
+  } catch (error) {
+    const err = error as Error;
+
+    if (err.message === 'jwt expired') {
+      return CustomError(res, 401, 'Токен не дейстивтелен.');
+    }
+
+    if (err.message === 'invalid signature') {
+      const email = await getEmailByID(id);
+      if (email) {
+        await sendAlertMail([email.email]);
+      }
+      return CustomError(res, 401, 'Ошибка авторизации.', err);
+    }
+
+    return CustomError(res, 500, ERROR_MESSAGE, err);
+  }
+};
+
+export const checkAccessTokenHandler: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  const accessToken = req.headers.authorization;
+
+  if (!accessToken) {
+    return CustomError(res, 401, 'Вы не авторизованы.');
+  }
+
+  await verifyTokenWithResponse(res, accessToken, next);
+};
+
+export const checkRefreshTokenHandler: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  const refreshToken: UUID = req.body.refreshToken;
+
+  if (!refreshToken) {
+    return CustomError(res, 401, 'Вы не авторизованы.');
+  }
+
+  await verifyTokenWithResponse(res, refreshToken, next);
 };

@@ -15,7 +15,7 @@ import { resAuthUser } from './utils';
 import { randomUUID } from 'crypto';
 import { createEmail } from '@/db/emails/emails';
 
-export const regUser: RequestHandler = async (req, res) => {
+export const regUserHandler: RequestHandler = async (req, res) => {
   const user: TRegister = req.body;
   const checkBody = checkFields(user, ['email', 'password', 'username']);
 
@@ -56,7 +56,7 @@ export const regUser: RequestHandler = async (req, res) => {
   }
 };
 
-export const regCodeVerify: RequestHandler = async (req, res) => {
+export const regCodeVerifyHandler: RequestHandler = async (req, res) => {
   const { code } = req.body;
 
   try {

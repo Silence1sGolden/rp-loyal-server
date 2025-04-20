@@ -1,16 +1,18 @@
 import express from 'express';
-import { regCodeVerify, regUser } from './user/reg';
-import { getProfile, refreshSession } from './user/utils';
-import { authCodeVerify, authUser } from './user/auth';
+import { regCodeVerifyHandler, regUserHandler } from './router/user/reg';
+import { getProfileHandler, refreshSessionHandler } from './router/user/utils';
+import { authCodeVerifyHandler, authUserHandler } from './router/user/auth';
 import cors from 'cors';
 import {
-  CustomError,
-  ERROR_MESSAGE,
-  getTokenPayload,
-  verifyToken,
+  checkAccessTokenHandler,
+  checkRefreshTokenHandler,
 } from './utils/service';
-import { getSession } from './db/sessions/sessions';
-import { UUID } from 'crypto';
+import {
+  createRolesHandler,
+  deleteRolesHandler,
+  getRolesByIDHandler,
+  updateRolesHandler,
+} from './router/roles/roles';
 export const app = express();
 
 app.use(express.json());
@@ -25,50 +27,24 @@ app.get('/api', (req, res) => {
   res.send({ status: true, data: 'OK' });
 });
 
+// ---SECURE---
+app.use('/api/v/', checkAccessTokenHandler);
+
 // ---USER---
-// get
-app.use('/api/v/', async (req, res, next) => {
-  const auth = req.headers.authorization;
-
-  if (!auth) {
-    return CustomError(res, 401, 'Доступ запрещён.');
-  }
-
-  try {
-    const data = getTokenPayload<{ id: UUID; sessionID: UUID }>(auth);
-    const session = await getSession(data.sessionID);
-
-    if (!session) {
-      return CustomError(res, 401, 'Токен не дейстивтелен.');
-    }
-
-    verifyToken(auth, session.key);
-
-    next();
-  } catch (error) {
-    const err = error as Error;
-
-    if (err.message === 'jwt expired') {
-      return CustomError(res, 401, 'Токен не дейстивтелен.');
-    }
-
-    if (err.message === 'invalid signature') {
-      // TODO
-      // сделать отправку сообщения на почту о том,
-      // что в аккаунт пытаются войти
-      return CustomError(res, 500, ERROR_MESSAGE, err);
-    }
-
-    return CustomError(res, 500, ERROR_MESSAGE, err);
-  }
-});
-app.get('/api/v/users/:id', getProfile);
+// users
+app.get('/api/v/users/:id', getProfileHandler);
 // auth
-app.post('/api/auth', authUser);
+app.post('/api/auth', authUserHandler);
 // registration
-app.post('/api/users', regUser);
+app.post('/api/users', regUserHandler);
 // verify
-// /api/c(what Confirm)
-app.post('/api/c/reg', regCodeVerify);
-app.post('/api/c/auth', authCodeVerify);
-app.post('/api/refresh', refreshSession);
+app.post('/api/c/reg', regCodeVerifyHandler);
+app.post('/api/c/auth', authCodeVerifyHandler);
+app.use('/api/refresh', checkRefreshTokenHandler);
+app.post('/api/refresh', refreshSessionHandler);
+
+// ---ROLES---
+app.get('/api/v/roles/:id', getRolesByIDHandler);
+app.delete('/api/v/roles/:id', deleteRolesHandler);
+app.post('/api/v/profile/roles', createRolesHandler);
+app.post('/api/v/roles/:id', updateRolesHandler);

@@ -372,7 +372,7 @@ export async function sendAuthVerifyMail(
 
 export async function sendAlertMail(
   to: string[],
-  data?: string,
+  data: string = '',
 ): Promise<void | SMTPTransport.SentMessageInfo> {
   return await transporter.sendMail({
     from: '"RP-loyal.official" <rployal.official@mail.ru>',

@@ -13,7 +13,7 @@ import { createCode, deleteCode, findCode } from '@/db/codes/codes';
 import { resAuthUser } from './utils';
 import { getEmailByEmail } from '@/db/emails/emails';
 
-export const authUser: RequestHandler = async (req, res) => {
+export const authUserHandler: RequestHandler = async (req, res) => {
   const user: TLogin = req.body;
   const check = checkFields(user, ['email', 'password']);
 
@@ -63,7 +63,7 @@ export const authUser: RequestHandler = async (req, res) => {
   }
 };
 
-export const authCodeVerify: RequestHandler = async (req, res) => {
+export const authCodeVerifyHandler: RequestHandler = async (req, res) => {
   const { code } = req.body;
 
   try {

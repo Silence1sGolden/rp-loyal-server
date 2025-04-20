@@ -6,3 +6,8 @@ export type TSession = {
   key: UUID;
   deathTime: number;
 };
+
+export type TAccessTokenBody = {
+  id: UUID;
+  sessionID: UUID;
+};
