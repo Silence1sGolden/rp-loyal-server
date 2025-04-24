@@ -20,21 +20,16 @@ app.get('/', (req, res) => {
 app.get('/api/v1', (req, res) => {
   res.send({ status: true, data: 'OK' });
 });
-// api/v1/auth
+
 app.use('/api/v1/auth', authRouter);
-// api/v1/register
 app.use('/api/v1/register', registerRouter);
-// api/v1/refresh
 app.use('/api/v1/refresh', sessionRouter);
-// api/v1/profiles
 app.use('/api/v1/profiles', profilesRouter);
-// api/v1/roles
 app.use('/api/v1/roles', rolesRouter);
-// api/v1/rooms
 app.use('/api/v1/rooms', roomsRouter);
 // api/v1/likes
-app.use('/api/v1/likes', checkAccessTokenHandler);
-app.get('/api/v1/likes/:id', likesProfileHandler);
+// app.use('/api/v1/likes', checkAccessTokenHandler);
+// app.get('/api/v1/likes/:id', likesProfileHandler);
 // api/v1/rewards
-app.use('/api/v1/rewards', checkAccessTokenHandler);
-app.post('/api/v1/rewards/:id', rewardsProfileHandler);
+// app.use('/api/v1/rewards', checkAccessTokenHandler);
+// app.post('/api/v1/rewards/:id', rewardsProfileHandler);

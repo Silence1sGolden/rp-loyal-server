@@ -1,11 +1,26 @@
 import { UUID } from 'crypto';
-import { TMessage } from '../rooms/types';
+import { TProfile } from '../profiles/types';
 
-export type TRoles = {
+export type TRoles = TRolesForChange & {
   _id: UUID;
+  author: TProfile;
+};
+
+export type TRolesForChange = {
   title: string;
-  users: UUID[];
-  messages: TMessage[];
-  discussion: TMessage[];
+  tags: string[];
+  ganre: string[];
+  about: string;
   rolesIMG: string;
+};
+
+export type TSearchParams = {
+  tags?: string[];
+  ganre?: string[];
+  likes?: boolean;
+  age?: {
+    '16+'?: boolean;
+    '18+'?: boolean;
+    '21+'?: boolean;
+  };
 };
