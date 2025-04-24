@@ -7,13 +7,14 @@ import {
   ERROR_MESSAGE,
   getRandomCode,
 } from '@/utils/service';
-import { RequestHandler } from 'express';
+import { Router } from 'express';
 import { getPasswordByEmail } from '@/db/passwords/passwords';
 import { createCode, deleteCode, findCode } from '@/db/codes/codes';
-import { resAuthUser } from './utils';
 import { getEmailByEmail } from '@/db/emails/emails';
 
-export const authUserHandler: RequestHandler = async (req, res) => {
+export const authRouter = Router();
+
+authRouter.post('/', async (req, res) => {
   const user: TLogin = req.body;
   const check = checkFields(user, ['email', 'password']);
 
@@ -24,11 +25,11 @@ export const authUserHandler: RequestHandler = async (req, res) => {
   const encrypted = await getPasswordByEmail(user.email);
 
   if (!encrypted) {
-    return CustomError(res, 401, 'Аккаунта с такой почтой не существует.');
+    return CustomError(res, 400, 'Аккаунта с такой почтой не существует.');
   }
 
   if (!(await bcrypt.compare(user.password, encrypted))) {
-    return CustomError(res, 401, 'Почта или пароль неверны.');
+    return CustomError(res, 400, 'Почта или пароль неверны.');
   }
 
   try {
@@ -38,7 +39,7 @@ export const authUserHandler: RequestHandler = async (req, res) => {
     if (!email) {
       return CustomError(
         res,
-        500,
+        400,
         `Пользователя с почтой ${user.email} не существует.`,
         new Error(
           `Расхождения в базах данных: ${user} не был найден в базе данных EMAILS`,
@@ -61,26 +62,26 @@ export const authUserHandler: RequestHandler = async (req, res) => {
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
-};
+});
 
-export const authCodeVerifyHandler: RequestHandler = async (req, res) => {
+authRouter.post('/code', async (req, res) => {
   const { code } = req.body;
 
   try {
     const codeData = await findCode(code);
 
     if (!codeData) {
-      return CustomError(res, 401, 'Код не найден.');
+      return CustomError(res, 400, 'Код не найден.');
     }
 
     if (codeData.createdAt + 5 * 60 * 1000 < Date.now()) {
       await deleteCode(code);
-      return CustomError(res, 401, 'Код не действителен.');
+      return CustomError(res, 400, 'Код не действителен.');
     }
 
     await deleteCode(code);
-    return await resAuthUser(res, codeData._id);
+    return await authUserWithResponse(res, codeData._id);
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
-};
+});

@@ -1,21 +1,23 @@
 import { sendAuthVerifyMail } from '@/transporter';
 import { TRegister } from '@/utils/types';
 import {
+  authUserWithResponse,
   checkFields,
   createNewProfile,
   CustomError,
   ERROR_MESSAGE,
   getRandomCode,
 } from '@/utils/service';
-import { RequestHandler } from 'express';
-import { createUser } from '@/db/users/users';
+import { Router } from 'express';
+import { createProfile } from '@/db/profiles/profiles';
 import { createPassword, getPasswordByEmail } from '@/db/passwords/passwords';
 import { createCode, deleteCode, findCode } from '@/db/codes/codes';
-import { resAuthUser } from './utils';
 import { randomUUID } from 'crypto';
 import { createEmail } from '@/db/emails/emails';
 
-export const regUserHandler: RequestHandler = async (req, res) => {
+export const registerRouter = Router();
+
+registerRouter.post('/', async (req, res) => {
   const user: TRegister = req.body;
   const checkBody = checkFields(user, ['email', 'password', 'username']);
 
@@ -54,9 +56,9 @@ export const regUserHandler: RequestHandler = async (req, res) => {
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
-};
+});
 
-export const regCodeVerifyHandler: RequestHandler = async (req, res) => {
+registerRouter.post('/code', async (req, res) => {
   const { code } = req.body;
 
   try {
@@ -74,11 +76,11 @@ export const regCodeVerifyHandler: RequestHandler = async (req, res) => {
     const profile = createNewProfile(_id, username!);
 
     await createPassword(email!, password!);
-    await createUser(profile);
+    await createProfile(profile);
     await createEmail({ email: user.email!, id: user._id });
     await deleteCode(code);
-    await resAuthUser(res, _id);
+    await authUserWithResponse(res, _id);
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }
-};
+});

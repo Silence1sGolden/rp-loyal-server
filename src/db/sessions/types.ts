@@ -11,3 +11,7 @@ export type TAccessTokenBody = {
   id: UUID;
   sessionID: UUID;
 };
+
+export type TRefreshTokenBody = {
+  sessionID: UUID;
+};

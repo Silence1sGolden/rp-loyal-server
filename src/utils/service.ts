@@ -1,12 +1,14 @@
 import { NextFunction, RequestHandler, Response } from 'express';
 import * as dotenv from 'dotenv';
 import { deleteCode, getCodes } from '@/db/codes/codes';
-import jwt, { Secret } from 'jsonwebtoken';
-import { TProfile } from '@/db/users/types';
-import { UUID } from 'crypto';
-import { getSession } from '@/db/sessions/sessions';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { TProfile } from '@/db/profiles/types';
+import { randomUUID, UUID } from 'crypto';
+import { createSession, getSession } from '@/db/sessions/sessions';
 import { getEmailByID } from '@/db/emails/emails';
 import { sendAlertMail } from '@/transporter';
+import ms, { StringValue } from 'ms';
+import { getProfileByID } from '@/db/profiles/profiles';
 
 dotenv.config();
 export const BASE_URL = process.env.BASE_URL || 'http://192.168.1.100:443';
@@ -86,9 +88,9 @@ export const clearCodes = async () => {
 export const createToken = <T extends object>(
   payload: T,
   key: UUID,
-  expriresIn: number,
+  expriresIn: number | StringValue | undefined,
 ): string => {
-  return jwt.sign(payload, key, { expiresIn: expriresIn });
+  return jwt.sign(payload, key, { expiresIn: expriresIn } as SignOptions);
 };
 
 export const verifyToken = <T>(token: string, key: UUID): T => {
@@ -148,7 +150,7 @@ export const checkAccessTokenHandler: RequestHandler = async (
   res,
   next,
 ) => {
-  const accessToken = req.headers.authorization;
+  const accessToken = req.headers.cookie;
 
   if (!accessToken) {
     return CustomError(res, 401, 'Вы не авторизованы.');
@@ -157,16 +159,50 @@ export const checkAccessTokenHandler: RequestHandler = async (
   await verifyTokenWithResponse(res, accessToken, next);
 };
 
-export const checkRefreshTokenHandler: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
-  const refreshToken: UUID = req.body.refreshToken;
+export const getKeysOfObject = <T extends object, A extends keyof T>(
+  data: T,
+): A[] => {
+  return Object.keys(data) as A[];
+};
 
-  if (!refreshToken) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
+export const getCookie = (key: string, data: string): string | undefined => {
+  const value = data
+    .split(';')
+    .map((item) => item.split('='))
+    .find((item) => item[0] === key);
+
+  if (value) {
+    return value[1];
+  } else {
+    return undefined;
   }
+};
 
-  await verifyTokenWithResponse(res, refreshToken, next);
+export const authUserWithResponse = async (res: Response, id: UUID) => {
+  const user = await getProfileByID(id);
+  const key = randomUUID();
+  const sessionID = randomUUID();
+
+  const accessToken = createToken({ id: id, sessionID: sessionID }, key, 1);
+  const refreshToken = createToken({ sessionID: sessionID }, key, ms('1DAY'));
+  await createSession({
+    id: id,
+    sessionID: sessionID,
+    key: key,
+    deathTime: Date.now() + 24 * 60 * 60 * 1000,
+  });
+
+  res
+    .cookie('accessToken', accessToken, {
+      maxAge: 5 * 60 * 1000,
+      httpOnly: true,
+    })
+    .status(200)
+    .send({
+      status: true,
+      data: {
+        refreshToken: refreshToken,
+        user: user,
+      },
+    });
 };

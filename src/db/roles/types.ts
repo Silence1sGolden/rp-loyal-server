@@ -1,19 +1,11 @@
 import { UUID } from 'crypto';
+import { TMessage } from '../rooms/types';
 
 export type TRoles = {
   _id: UUID;
-  users: UUID[];
-  description: string;
   title: string;
-  rolesImage: string;
-  tags: string[];
+  users: UUID[];
   messages: TMessage[];
-};
-
-export type TMessage = {
-  _id: UUID;
-  author: string;
-  authorIMG: string;
-  message: string;
-  sendAt: string;
+  discussion: TMessage[];
+  rolesIMG: string;
 };
