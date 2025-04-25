@@ -90,19 +90,6 @@ export const getKeysOfObject = <T extends object, A extends keyof T>(
   return Object.keys(data) as A[];
 };
 
-export const getCookie = (key: string, data: string): string | undefined => {
-  const value = data
-    .split(';')
-    .map((item) => item.split('='))
-    .find((item) => item[0] === key);
-
-  if (value) {
-    return value[1];
-  } else {
-    return undefined;
-  }
-};
-
 export const authUserWithResponse = async (res: Response, id: UUID) => {
   const user = await getProfileByID(id);
   const key = randomUUID();

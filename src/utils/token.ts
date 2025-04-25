@@ -7,6 +7,7 @@ import { CustomError, ERROR_MESSAGE } from './service';
 import { getSession } from '@/db/sessions/sessions';
 import { getEmailByID } from '@/db/emails/emails';
 import { sendAlertMail } from '@/transporter';
+import { getCookie } from './cookie';
 
 export const createToken = <T extends object>(
   payload: T,

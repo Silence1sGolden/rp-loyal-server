@@ -122,3 +122,19 @@ export const updateProfile = async (
     ]);
   }
 };
+
+export const likeProfile = async (id: UUID, userID: UUID): Promise<void> => {
+  const profile = await getProfileByID(id);
+
+  if (profile) {
+    if (profile.stats.likes.find((item) => item === userID)) {
+      profile.stats.likes.filter((item) => item !== userID);
+    } else {
+      profile.stats.likes.push(userID);
+    }
+
+    const profiles = await getProfiles();
+
+    await setProfiles([...profiles.filter((item) => item._id !== id), profile]);
+  }
+};

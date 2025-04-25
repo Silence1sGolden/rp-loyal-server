@@ -6,6 +6,7 @@ import { profilesRouter } from './routes/profiles';
 import { roomsRouter } from './routes/rooms';
 import { rolesRouter } from './routes/roles';
 import { sessionRouter } from './routes/session';
+import { likesRouter } from './routes/likes';
 export const app = express();
 
 app.use(express.json());
@@ -26,9 +27,7 @@ app.use('/api/v1/refresh', sessionRouter);
 app.use('/api/v1/profiles', profilesRouter);
 app.use('/api/v1/roles', rolesRouter);
 app.use('/api/v1/rooms', roomsRouter);
-// api/v1/likes
-// app.use('/api/v1/likes', checkAccessTokenHandler);
-// app.get('/api/v1/likes/:id', likesProfileHandler);
+app.use('/api/v1/likes', likesRouter);
 // api/v1/rewards
 // app.use('/api/v1/rewards', checkAccessTokenHandler);
 // app.post('/api/v1/rewards/:id', rewardsProfileHandler);
