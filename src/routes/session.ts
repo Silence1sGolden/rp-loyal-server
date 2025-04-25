@@ -1,7 +1,8 @@
 import { deleteSession, getSession } from '@/db/sessions/sessions';
 import { TRefreshTokenBody } from '@/db/sessions/types';
 import { authUserWithResponse } from '@/utils/service';
-import { CustomError, ERROR_MESSAGE, getTokenPayload } from '@/utils/service';
+import { CustomError, ERROR_MESSAGE } from '@/utils/service';
+import { getTokenPayload } from '@/utils/token';
 import { UUID } from 'crypto';
 import { Router } from 'express';
 

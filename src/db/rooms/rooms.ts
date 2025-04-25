@@ -59,3 +59,27 @@ export const updateRooms = async (id: UUID, data: TRooms): Promise<void> => {
     }
   });
 };
+
+export const getMessages = async (
+  id: UUID,
+): Promise<TMessage[] | undefined> => {
+  const room = await getRoomsByID(id);
+
+  if (room) {
+    return room.messages;
+  }
+
+  return undefined;
+};
+
+export const getDiscussion = async (
+  id: UUID,
+): Promise<TMessage[] | undefined> => {
+  const room = await getRoomsByID(id);
+
+  if (room) {
+    return room.discussion;
+  }
+
+  return undefined;
+};

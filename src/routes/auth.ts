@@ -2,6 +2,7 @@ import { sendAuthVerifyMail } from '@/transporter';
 import { TLogin } from '@/utils/types';
 import * as bcrypt from 'bcrypt';
 import {
+  authUserWithResponse,
   checkFields,
   CustomError,
   ERROR_MESSAGE,

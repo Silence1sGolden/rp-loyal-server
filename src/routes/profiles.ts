@@ -6,16 +6,13 @@ import {
   getProfileByID,
   updateProfile,
 } from '@/db/profiles/profiles';
-import {
-  checkAccessTokenHandler,
-  checkFields,
-  CustomError,
-  ERROR_MESSAGE,
-  getCookie,
-  getTokenPayload,
-} from '@/utils/service';
+import { checkFields, CustomError, ERROR_MESSAGE } from '@/utils/service';
+import { getCookie } from '../utils/cookie';
 import { UUID } from 'crypto';
 import { Router } from 'express';
+import { deleteEmailByID, getEmailByID } from '@/db/emails/emails';
+import { deletePassword } from '@/db/passwords/passwords';
+import { checkAccessTokenHandler, getTokenPayload } from '@/utils/token';
 
 export const profilesRouter = Router();
 
@@ -119,6 +116,9 @@ profilesRouter.delete('/', async (req, res) => {
   try {
     await deleteSession(sessionID);
     await deleteProfile(id);
+    const user = await getEmailByID(id);
+    await deleteEmailByID(id);
+    await deletePassword(user!.email);
 
     res.status(200).send({ status: true, data: 'Профиль удалён.' });
   } catch (err) {

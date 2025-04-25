@@ -7,13 +7,8 @@ import {
 } from '@/db/rooms/rooms';
 import { TRooms } from '@/db/rooms/types';
 import { TAccessTokenBody } from '@/db/sessions/types';
-import {
-  checkAccessTokenHandler,
-  checkFields,
-  CustomError,
-  ERROR_MESSAGE,
-  getTokenPayload,
-} from '@/utils/service';
+import { checkFields, CustomError, ERROR_MESSAGE } from '@/utils/service';
+import { checkAccessTokenHandler, getTokenPayload } from '@/utils/token';
 import { randomUUID, UUID } from 'crypto';
 import { RequestHandler, Router } from 'express';
 

@@ -2,7 +2,6 @@ import express from 'express';
 import { registerRouter } from './routes/reg';
 import { authRouter } from './routes/auth';
 import cors from 'cors';
-import { checkAccessTokenHandler } from './utils/service';
 import { profilesRouter } from './routes/profiles';
 import { roomsRouter } from './routes/rooms';
 import { rolesRouter } from './routes/roles';

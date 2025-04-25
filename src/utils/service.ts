@@ -1,14 +1,13 @@
-import { NextFunction, RequestHandler, Response } from 'express';
+import { Response } from 'express';
 import * as dotenv from 'dotenv';
 import { deleteCode, getCodes } from '@/db/codes/codes';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { Secret } from 'jsonwebtoken';
 import { TProfile } from '@/db/profiles/types';
 import { randomUUID, UUID } from 'crypto';
-import { createSession, getSession } from '@/db/sessions/sessions';
-import { getEmailByID } from '@/db/emails/emails';
-import { sendAlertMail } from '@/transporter';
-import ms, { StringValue } from 'ms';
+import { createSession } from '@/db/sessions/sessions';
+import ms from 'ms';
 import { getProfileByID } from '@/db/profiles/profiles';
+import { createToken } from './token';
 
 dotenv.config();
 export const BASE_URL = process.env.BASE_URL || 'http://192.168.1.100:443';
@@ -85,80 +84,6 @@ export const clearCodes = async () => {
   console.log('Проверка завершена.');
 };
 
-export const createToken = <T extends object>(
-  payload: T,
-  key: UUID,
-  expriresIn: number | StringValue | undefined,
-): string => {
-  return jwt.sign(payload, key, { expiresIn: expriresIn } as SignOptions);
-};
-
-export const verifyToken = <T>(token: string, key: UUID): T => {
-  return jwt.verify(token, key) as T;
-};
-
-export const getTokenPayload = <T>(token: string): T => {
-  return jwt.decode(token) as T;
-};
-
-export const verifyTokenWithResponse = async (
-  res: Response,
-  token: string,
-  next?: NextFunction,
-): Promise<void> => {
-  const { id, sessionID } = getTokenPayload<{ id: UUID; sessionID: UUID }>(
-    token,
-  );
-
-  if (!id || !sessionID) {
-    return CustomError(res, 400, 'Токен не содержит необходимой информации.');
-  }
-
-  try {
-    const session = await getSession(sessionID);
-
-    if (!session) {
-      return CustomError(res, 401, 'Токен не дейстивтелен.');
-    }
-
-    jwt.verify(token, session.key);
-
-    if (next) {
-      next();
-    }
-  } catch (error) {
-    const err = error as Error;
-
-    if (err.message === 'jwt expired') {
-      return CustomError(res, 401, 'Токен не дейстивтелен.');
-    }
-
-    if (err.message === 'invalid signature') {
-      const email = await getEmailByID(id);
-      if (email) {
-        await sendAlertMail([email.email]);
-      }
-      return CustomError(res, 401, 'Ошибка авторизации.', err);
-    }
-
-    return CustomError(res, 500, ERROR_MESSAGE, err);
-  }
-};
-
-export const checkAccessTokenHandler: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
-  const accessToken = req.headers.cookie;
-
-  if (!accessToken) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
-  }
-
-  await verifyTokenWithResponse(res, accessToken, next);
-};
-
 export const getKeysOfObject = <T extends object, A extends keyof T>(
   data: T,
 ): A[] => {
@@ -183,7 +108,11 @@ export const authUserWithResponse = async (res: Response, id: UUID) => {
   const key = randomUUID();
   const sessionID = randomUUID();
 
-  const accessToken = createToken({ id: id, sessionID: sessionID }, key, 1);
+  const accessToken = createToken(
+    { id: id, sessionID: sessionID },
+    key,
+    ms('5MIN'),
+  );
   const refreshToken = createToken({ sessionID: sessionID }, key, ms('1DAY'));
   await createSession({
     id: id,

@@ -5,11 +5,11 @@ import { UUID } from 'crypto';
 const rolesDB = new JsonDB(new Config('./src/db/roles/db', true, false, '/'));
 
 export const getRoles = async (): Promise<TRoles[]> => {
-  return await rolesDB.getData('/rooms');
+  return await rolesDB.getData('/roles');
 };
 
 export const setRoles = async (rooms: TRoles[]): Promise<void> => {
-  return await rolesDB.push('/rooms', rooms);
+  return await rolesDB.push('/roles', rooms);
 };
 
 export const getRolesWithFilter = async (

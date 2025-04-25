@@ -7,14 +7,9 @@ import {
 } from '@/db/roles/roles';
 import { TRolesForChange } from '@/db/roles/types';
 import { TAccessTokenBody } from '@/db/sessions/types';
-import {
-  checkAccessTokenHandler,
-  checkFields,
-  CustomError,
-  ERROR_MESSAGE,
-  getCookie,
-  getTokenPayload,
-} from '@/utils/service';
+import { checkFields, CustomError, ERROR_MESSAGE } from '@/utils/service';
+import { getCookie } from '../utils/cookie';
+import { checkAccessTokenHandler, getTokenPayload } from '@/utils/token';
 import { UUID } from 'crypto';
 import { Router } from 'express';
 
