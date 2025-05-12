@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import 'dotenv/config';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { BASE_URL, EMAIL, EMAIL_PASSWORD } from './utils/service';
+import { UUID } from 'crypto';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.mail.ru',
@@ -389,6 +390,31 @@ export async function sendAlertMail(
     <body>
         <p>В ваш аккаунт пытались войти, если это не вы, то обязательно сообщите об этом в поддержку.</p>
         ${data}
+    </body>
+    </html>`,
+  });
+}
+
+export async function sendResetMail(
+  to: string[],
+  data: UUID,
+): Promise<void | SMTPTransport.SentMessageInfo> {
+  return await transporter.sendMail({
+    from: '"RP-loyal.official" <rployal.official@mail.ru>',
+    to: to,
+    subject: 'Восстановление пароля',
+    text: 'Восстановление пароля',
+    html: `<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    </head>
+    <body>
+        <p>Если вы получили это сообщение по ошибке, то срочно сообщите в поддержку!</p>
+        <p>Перейдите по ссылке, чтоб изменить текущий пароль.</p>
+        ${BASE_URL + '/api/v1/reset/' + data}
     </body>
     </html>`,
   });

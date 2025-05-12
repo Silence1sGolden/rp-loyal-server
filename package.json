@@ -21,11 +21,13 @@
   "homepage": "https://github.com/Silence1sGolden/rp-loyal-server#readme",
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/ms": "^2.1.0",
     "@types/nodemailer": "^6.4.17",
     "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",

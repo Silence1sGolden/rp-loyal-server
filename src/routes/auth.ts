@@ -36,19 +36,7 @@ authRouter.post('/', async (req, res) => {
   try {
     const code = getRandomCode();
     const email = await getEmailByEmail(user.email);
-
-    if (!email) {
-      return CustomError(
-        res,
-        400,
-        `Пользователя с почтой ${user.email} не существует.`,
-        new Error(
-          `Расхождения в базах данных: ${user} не был найден в базе данных EMAILS`,
-        ),
-      );
-    }
-
-    const info = await sendAuthVerifyMail([user.email], code);
+    const info = await sendAuthVerifyMail([email!.email], code);
 
     if (!info) {
       return CustomError(
@@ -58,7 +46,7 @@ authRouter.post('/', async (req, res) => {
       );
     }
 
-    await createCode(email.id, code, req.body);
+    await createCode(email!.id, code, req.body);
     res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);

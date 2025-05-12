@@ -14,7 +14,7 @@ export const setSessions = async (sessions: TSession[]): Promise<void> => {
   await sessionsDB.push('/sessions', sessions);
 };
 
-export const getSession = async (
+export const getSessionByID = async (
   sessionID: UUID,
 ): Promise<TSession | undefined> => {
   return await getSessions().then((sessions) => {

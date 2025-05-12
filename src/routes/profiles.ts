@@ -19,7 +19,7 @@ export const profilesRouter = Router();
 profilesRouter.use(checkAccessTokenHandler);
 
 profilesRouter.get('/', async (req, res) => {
-  const accessToken = req.cookies.accessToken as string;
+  const accessToken = req.headers.authorization as string;
   const { id } = getTokenPayload<TAccessTokenBody>(accessToken);
 
   try {

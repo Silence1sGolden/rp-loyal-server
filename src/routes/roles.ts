@@ -5,7 +5,7 @@ import {
   getRolesWithFilter,
   updateRoles,
 } from '@/db/roles/roles';
-import { TRolesForChange } from '@/db/roles/types';
+import { TRolesForChange, TSearchParams } from '@/db/roles/types';
 import { TAccessTokenBody } from '@/db/sessions/types';
 import { checkFields, CustomError, ERROR_MESSAGE } from '@/utils/service';
 import { getCookie } from '../utils/cookie';
@@ -15,16 +15,18 @@ import { Router } from 'express';
 
 export const rolesRouter = Router();
 
-rolesRouter.use(checkAccessTokenHandler);
+// rolesRouter.use(checkAccessTokenHandler);
 
 rolesRouter.get('/', async (req, res) => {
-  const { id } = getTokenPayload<TAccessTokenBody>(
-    getCookie('acceessToken', req.headers.cookie!)!,
-  );
-  const filter = req.query;
+  // const { id } = getTokenPayload<TAccessTokenBody>(req.headers.authorization!);
+  const query = req.query;
+  const filter: TSearchParams = {
+    ganre: query.ganre ? (query.ganre as string).split(',') : undefined,
+    tags: query.tags ? (query.tags as string).split(',') : undefined,
+  };
 
   try {
-    const roles = await getRolesWithFilter(id, filter);
+    const roles = await getRolesWithFilter('id' as UUID, filter);
 
     res.status(200).send({ status: true, data: roles });
   } catch (err) {

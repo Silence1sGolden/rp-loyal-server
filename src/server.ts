@@ -1,5 +1,5 @@
 import { app } from './app';
-import { clearCodes } from './utils/service';
+import { clearCodes, clearSessions } from './utils/service';
 
 // const base_url = process.cwd();
 // const options: ServerOptions = {
@@ -14,7 +14,10 @@ import { clearCodes } from './utils/service';
 //   })
 //   .listen(8000);
 
-setInterval(clearCodes, 60 * 1000);
+setInterval(() => {
+  clearCodes();
+  clearSessions();
+}, 60 * 1000);
 
 app.listen('3000', () => {
   console.log('Server running on port 3000');

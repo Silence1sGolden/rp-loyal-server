@@ -4,10 +4,9 @@ import { NextFunction, RequestHandler, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { StringValue } from 'ms';
 import { CustomError, ERROR_MESSAGE } from './service';
-import { getSession } from '@/db/sessions/sessions';
+import { getSessionByID } from '@/db/sessions/sessions';
 import { getEmailByID } from '@/db/emails/emails';
 import { sendAlertMail } from '@/transporter';
-import { getCookie } from './cookie';
 
 export const createToken = <T extends object>(
   payload: T,
@@ -30,14 +29,14 @@ export const verifyTokenWithResponse = async (
   token: string,
   next?: NextFunction,
 ): Promise<void> => {
-  const { id, sessionID } = getTokenPayload<TAccessTokenBody>(token);
-
-  if (!id || !sessionID) {
-    return CustomError(res, 400, 'Токен не содержит необходимой информации.');
-  }
-
   try {
-    const session = await getSession(sessionID);
+    const { id, sessionID } = getTokenPayload<TAccessTokenBody>(token);
+
+    if (!id || !sessionID) {
+      return CustomError(res, 400, 'Токен не содержит необходимой информации.');
+    }
+
+    const session = await getSessionByID(sessionID);
 
     if (!session) {
       return CustomError(res, 401, 'Токен не дейстивтелен.');
@@ -52,15 +51,11 @@ export const verifyTokenWithResponse = async (
     const err = error as Error;
 
     if (err.message === 'jwt expired') {
-      return CustomError(res, 401, 'Токен не дейстивтелен.');
+      return CustomError(res, 400, 'Токен не дейстивтелен.');
     }
 
     if (err.message === 'invalid signature') {
-      const email = await getEmailByID(id);
-      if (email) {
-        await sendAlertMail([email.email]);
-      }
-      return CustomError(res, 401, 'Ошибка авторизации.', err);
+      return CustomError(res, 400, 'Ошибка авторизации.', err);
     }
 
     return CustomError(res, 500, ERROR_MESSAGE, err);
@@ -72,17 +67,11 @@ export const checkAccessTokenHandler: RequestHandler = async (
   res,
   next,
 ) => {
-  const cookie = req.headers.cookie;
+  const auth = req.headers.authorization;
 
-  if (!cookie) {
+  if (!auth) {
     return CustomError(res, 400, 'Вы не авторизованы.');
   }
 
-  const acceessToken = getCookie('accessToken', cookie);
-
-  if (!acceessToken) {
-    return CustomError(res, 400, 'Вы не авторизованы.');
-  }
-
-  await verifyTokenWithResponse(res, acceessToken, next);
+  await verifyTokenWithResponse(res, auth, next);
 };

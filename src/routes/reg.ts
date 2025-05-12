@@ -29,7 +29,7 @@ registerRouter.post('/', async (req, res) => {
     if (await getPasswordByEmail(user.email)) {
       return CustomError(
         res,
-        401,
+        400,
         'Пользователь с такой почтой уже существует.',
       );
     }
@@ -65,11 +65,11 @@ registerRouter.post('/code', async (req, res) => {
     const user = await findCode(code);
 
     if (!user) {
-      return CustomError(res, 401, 'Код не действителен.', '!user');
+      return CustomError(res, 400, 'Код не действителен.');
     }
 
     if (user.createdAt + 5 * 60 * 1000 < Date.now()) {
-      return CustomError(res, 401, 'Код не действителен.', 'createdAt');
+      return CustomError(res, 400, 'Код не действителен.');
     }
 
     const { _id, username, email, password } = user;

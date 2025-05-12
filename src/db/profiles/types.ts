@@ -3,7 +3,7 @@ import { UUID } from 'crypto';
 export type TProfile = TProfileForChange & {
   _id: UUID;
   stats: TStats;
-  forms: TRolesForm[];
+  roles: TRolesForm[];
   isDeleted?: boolean;
   isBanned?: boolean;
 };

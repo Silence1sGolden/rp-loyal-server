@@ -20,15 +20,19 @@ export const getRolesWithFilter = async (
 
   return roles
     .filter((role) => {
-      if (filter.tags && filter.tags.length) {
-        return role.tags.every((item) => filter.tags!.includes(item));
+      if (filter.tags) {
+        return filter.tags.every((filterTag) =>
+          role.tags.find((roleTag) => roleTag === filterTag),
+        );
       } else {
         return true;
       }
     })
     .filter((role) => {
-      if (filter.ganre && filter.ganre.length) {
-        return role.ganre.every((item) => filter.ganre!.includes(item));
+      if (filter.ganre) {
+        return filter.ganre.every((filterGanre) =>
+          role.ganre.find((roleGanre) => roleGanre === filterGanre),
+        );
       } else {
         return true;
       }
