@@ -32,14 +32,14 @@ roomsRouter.get('/:id', async (req, res) => {
   const id = req.params.id as UUID;
 
   if (!id) {
-    return CustomError(res, 400, 'ID комнаты не найден.');
+    CustomError(res, 400, 'ID комнаты не найден.'); return;
   }
 
   try {
     const rooms = await getRoomsByID(id);
 
     if (!rooms) {
-      return CustomError(res, 404, 'Комнаты с таким ID не найдена.');
+      CustomError(res, 404, 'Комнаты с таким ID не найдена.'); return;
     }
 
     res.status(200).send({ status: true, data: rooms });
@@ -50,10 +50,10 @@ roomsRouter.get('/:id', async (req, res) => {
 
 roomsRouter.delete('/:id', async (req, res) => {
   const id = req.params.id as UUID;
-  const accessToken = req.headers.authorization as string;
+  const accessToken = req.headers.authorization!;
 
   if (!id) {
-    return CustomError(res, 400, 'ID ролки не найден.');
+    CustomError(res, 400, 'ID ролки не найден.'); return;
   }
 
   try {
@@ -61,33 +61,33 @@ roomsRouter.delete('/:id', async (req, res) => {
     const rooms = await getRoomsByID(id);
 
     if (!rooms) {
-      return CustomError(res, 404, 'Ролка с таким ID не найдена.');
+      CustomError(res, 404, 'Ролка с таким ID не найдена.'); return;
     }
 
     if (rooms._id !== payload.id) {
-      return CustomError(res, 401, 'Недостаточно прав.');
+      CustomError(res, 401, 'Недостаточно прав.'); return;
     }
 
     await deleteRooms(id);
 
     res.status(200).send({ status: true, data: 'Ролка удалена.' });
   } catch (error) {
-    return CustomError(res, 500, ERROR_MESSAGE, error);
+    CustomError(res, 500, ERROR_MESSAGE, error); return;
   }
 });
 
 roomsRouter.post('/:id', async (req, res) => {
   const id = req.params.id as UUID;
   const data = req.body as TRooms;
-  const accessToken = req.headers.authorization as string;
+  const accessToken = req.headers.authorization!;
   const check = checkFields(data, ['roomsIMG', 'title', 'tags', 'description']);
 
   if (!id) {
-    return CustomError(res, 400, 'ID ролки не найден.');
+    CustomError(res, 400, 'ID ролки не найден.'); return;
   }
 
   if (check) {
-    return CustomError(res, 400, check);
+    CustomError(res, 400, check); return;
   }
 
   try {
@@ -95,11 +95,11 @@ roomsRouter.post('/:id', async (req, res) => {
     const rooms = await getRoomsByID(id);
 
     if (!rooms) {
-      return CustomError(res, 400, 'Ролка с таким ID не найдена.');
+      CustomError(res, 400, 'Ролка с таким ID не найдена.'); return;
     }
 
     if (rooms._id !== payload.id) {
-      return CustomError(res, 400, 'Недостаточно прав.');
+      CustomError(res, 400, 'Недостаточно прав.'); return;
     }
 
     await updateRooms(id, data);
@@ -107,17 +107,17 @@ roomsRouter.post('/:id', async (req, res) => {
 
     res.status(200).send({ status: true, data: newRooms });
   } catch (error) {
-    return CustomError(res, 500, ERROR_MESSAGE, error);
+    CustomError(res, 500, ERROR_MESSAGE, error); return;
   }
 });
 
 export const createRoom: RequestHandler = async (req, res) => {
   const data = req.body as TRooms;
-  const accessToken = req.headers.authorization as string;
+  const accessToken = req.headers.authorization!;
   const check = checkFields(data, ['roomsIMG', 'title']);
 
   if (check) {
-    return CustomError(res, 400, check);
+    CustomError(res, 400, check); return;
   }
 
   try {
@@ -139,6 +139,6 @@ export const createRoom: RequestHandler = async (req, res) => {
 
     res.status(200).send({ status: true, data: newRooms });
   } catch (error) {
-    return CustomError(res, 500, ERROR_MESSAGE, error);
+    CustomError(res, 500, ERROR_MESSAGE, error); return;
   }
 };

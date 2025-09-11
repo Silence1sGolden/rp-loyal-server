@@ -7,36 +7,36 @@ import {
   updateProfile,
 } from '@/db/profiles/profiles';
 import { checkFields, CustomError, ERROR_MESSAGE } from '@/utils/service';
-import { getCookie } from '../utils/cookie';
 import { UUID } from 'crypto';
 import { Router } from 'express';
 import { deleteEmailByID, getEmailByID } from '@/db/emails/emails';
 import { deletePassword } from '@/db/passwords/passwords';
 import { checkAccessTokenHandler, getTokenPayload } from '@/utils/token';
+import { getCookie } from '@/utils/cookie';
 
 export const profilesRouter = Router();
 
 profilesRouter.use(checkAccessTokenHandler);
 
 profilesRouter.get('/', async (req, res) => {
-  const accessToken = req.headers.authorization as string;
+  const accessToken = req.headers.authorization!;
   const { id } = getTokenPayload<TAccessTokenBody>(accessToken);
 
   try {
     const profile = await getProfileByID(id);
 
     if (!profile) {
-      return CustomError(
+      CustomError(
         res,
         400,
         'Профиль не найден',
         'Запрошен профиль с токеном доступа без найденного профиля',
-      );
+      ); return;
     }
 
     res.status(200).send({ status: true, data: profile });
   } catch (error) {
-    return CustomError(res, 500, ERROR_MESSAGE, error);
+    CustomError(res, 500, ERROR_MESSAGE, error); return;
   }
 });
 
@@ -44,14 +44,14 @@ profilesRouter.get('/:id', async (req, res) => {
   const id = req.params.id as UUID;
 
   if (!id) {
-    return CustomError(res, 400, 'ID пользователя не определён.');
+    CustomError(res, 400, 'ID пользователя не определён.'); return;
   }
 
   try {
     const user = await getProfileByID(id);
 
     if (!user) {
-      return CustomError(res, 404, 'Пользователь с таким id не найден.');
+      CustomError(res, 404, 'Пользователь с таким id не найден.'); return;
     }
 
     res.status(200).send({ status: true, data: user });
@@ -71,19 +71,19 @@ profilesRouter.post('/', async (req, res) => {
   ]);
 
   if (check) {
-    return CustomError(res, 400, 'Тело запроса некорректно.');
+    CustomError(res, 400, 'Тело запроса некорректно.'); return;
   }
 
   const cookie = req.headers.cookie;
 
   if (!cookie) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
+    CustomError(res, 401, 'Вы не авторизованы.'); return;
   }
 
   const token = getCookie('accessToken', cookie);
 
   if (!token) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
+    CustomError(res, 401, 'Вы не авторизованы.'); return;
   }
 
   const { id } = getTokenPayload<TAccessTokenBody>(token);
@@ -94,7 +94,7 @@ profilesRouter.post('/', async (req, res) => {
 
     res.status(200).send({ status: true, data: newProfile });
   } catch (err) {
-    return CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500, ERROR_MESSAGE, err); return;
   }
 });
 
@@ -102,13 +102,13 @@ profilesRouter.delete('/', async (req, res) => {
   const cookie = req.headers.cookie;
 
   if (!cookie) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
+    CustomError(res, 401, 'Вы не авторизованы.'); return;
   }
 
   const token = getCookie('accessToken', cookie);
 
   if (!token) {
-    return CustomError(res, 401, 'Вы не авторизованы.');
+    CustomError(res, 401, 'Вы не авторизованы.'); return;
   }
 
   const { id, sessionID } = getTokenPayload<TAccessTokenBody>(token);

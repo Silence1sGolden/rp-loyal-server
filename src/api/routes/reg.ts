@@ -22,16 +22,16 @@ registerRouter.post('/', async (req, res) => {
   const checkBody = checkFields(user, ['email', 'password', 'username']);
 
   if (checkBody) {
-    return CustomError(res, 400, checkBody);
+    CustomError(res, 400, checkBody); return;
   }
 
   try {
     if (await getPasswordByEmail(user.email)) {
-      return CustomError(
+      CustomError(
         res,
         400,
         'Пользователь с такой почтой уже существует.',
-      );
+      ); return;
     }
 
     const id = randomUUID();
@@ -46,11 +46,11 @@ registerRouter.post('/', async (req, res) => {
     const info = await sendAuthVerifyMail([user.email], code);
 
     if (!info) {
-      return CustomError(
+      CustomError(
         res,
         500,
         `Письмо не удалось отправить на почту ${user.email}. Пожалуйста, попробуйте позже.`,
-      );
+      ); return;
     }
     res.status(200).send({ status: true, data: 'Код отправлен на почту.' });
   } catch (err) {
@@ -65,11 +65,11 @@ registerRouter.post('/code', async (req, res) => {
     const user = await findCode(code);
 
     if (!user) {
-      return CustomError(res, 400, 'Код не действителен.');
+      CustomError(res, 400, 'Код не действителен.'); return;
     }
 
     if (user.createdAt + 5 * 60 * 1000 < Date.now()) {
-      return CustomError(res, 400, 'Код не действителен.');
+      CustomError(res, 400, 'Код не действителен.'); return;
     }
 
     const { _id, username, email, password } = user;

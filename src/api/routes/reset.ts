@@ -12,18 +12,18 @@ resetRouter.post('/', async (req, res) => {
   const check = checkFields<{ email: string }>(req.body, ['email']);
 
   if (check) {
-    return CustomError(res, 404, 'Необходимые данные отсутствуют.');
+    CustomError(res, 404, 'Необходимые данные отсутствуют.'); return;
   }
 
   try {
     const data = await getEmailByEmail(req.body.email);
 
     if (!data) {
-      return CustomError(
+      CustomError(
         res,
         400,
         'Пользователя с такой почтой не существует.',
-      );
+      ); return;
     }
 
     const link = randomUUID();
@@ -34,7 +34,7 @@ resetRouter.post('/', async (req, res) => {
       .status(200)
       .send({ status: true, data: 'Письмо отправлено на вашу почту.' });
   } catch (err) {
-    return CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500, ERROR_MESSAGE, err); return;
   }
 });
 
@@ -42,11 +42,11 @@ resetRouter.post('/:link', async (req, res) => {
   const check = checkFields<{ password: string }>(req.body, ['password']);
 
   if (check) {
-    return CustomError(res, 400, check);
+    CustomError(res, 400, check); return;
   }
 
   if (!req.params.link) {
-    return CustomError(res, 400, 'Такой ссылки не существует.');
+    CustomError(res, 400, 'Такой ссылки не существует.'); return;
   }
 
   const link = req.params.link;
@@ -55,13 +55,13 @@ resetRouter.post('/:link', async (req, res) => {
     const id = await getReset(link);
 
     if (!id) {
-      return CustomError(res, 400, 'ID не найден.');
+      CustomError(res, 400, 'ID не найден.'); return;
     }
 
     const email = await getEmailByID(id);
 
     if (!email) {
-      return CustomError(res, 400, 'Такой почты не суещствует.');
+      CustomError(res, 400, 'Такой почты не суещствует.'); return;
     }
 
     await deletePassword(email.email);
@@ -69,6 +69,6 @@ resetRouter.post('/:link', async (req, res) => {
 
     res.status(200).send({ status: true, data: 'Пароль изменен.' });
   } catch (err) {
-    return CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500, ERROR_MESSAGE, err); return;
   }
 });

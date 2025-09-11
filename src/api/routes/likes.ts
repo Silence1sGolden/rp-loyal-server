@@ -14,7 +14,7 @@ likesRouter.get('/:id', async (req, res) => {
   const id = req.params.id as UUID;
 
   if (!id) {
-    return CustomError(res, 400, 'ID не найдено.');
+    CustomError(res, 400, 'ID не найдено.'); return;
   }
 
   const payload = getTokenPayload<TAccessTokenBody>(
@@ -25,13 +25,13 @@ likesRouter.get('/:id', async (req, res) => {
     const profile = await getProfileByID(id);
 
     if (!profile) {
-      return CustomError(res, 400, 'Профиль с таким ID не найден.');
+      CustomError(res, 400, 'Профиль с таким ID не найден.'); return;
     }
 
     await likeProfile(id, payload.id);
 
     res.status(200).send({ status: true, data: null });
   } catch (err) {
-    return CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500, ERROR_MESSAGE, err); return;
   }
 });

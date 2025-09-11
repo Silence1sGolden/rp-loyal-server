@@ -20,30 +20,40 @@ authRouter.post('/', async (req, res) => {
   const check = checkFields(user, ['email', 'password']);
 
   if (check) {
-    return CustomError(res, 400, check);
+    CustomError(res, 400, check);
+    return;
   }
 
   const encrypted = await getPasswordByEmail(user.email);
 
   if (!encrypted) {
-    return CustomError(res, 400, 'Аккаунта с такой почтой не существует.');
+    CustomError(res, 400, 'Аккаунта с такой почтой не существует.');
+    return;
   }
 
   if (!(await bcrypt.compare(user.password, encrypted))) {
-    return CustomError(res, 400, 'Почта или пароль неверны.');
+    CustomError(res, 400, 'Почта или пароль неверны.');
+    return;
   }
 
   try {
     const code = getRandomCode();
     const email = await getEmailByEmail(user.email);
+
+    if (!email) {
+      CustomError(res, 400, 'Аккаунта с такой почтой не существует.');
+      return;
+    }
+
     const info = await sendAuthVerifyMail([email!.email], code);
 
     if (!info) {
-      return CustomError(
+      CustomError(
         res,
         500,
         `Письмо не удалось отправить на почту ${user.email}. Пожалуйста, попробуйте позже.`,
       );
+      return;
     }
 
     await createCode(email!.id, code, req.body);
@@ -60,16 +70,19 @@ authRouter.post('/code', async (req, res) => {
     const codeData = await findCode(code);
 
     if (!codeData) {
-      return CustomError(res, 400, 'Код не найден.');
+      CustomError(res, 400, 'Код не найден.');
+      return;
     }
 
     if (codeData.createdAt + 5 * 60 * 1000 < Date.now()) {
       await deleteCode(code);
-      return CustomError(res, 400, 'Код не действителен.');
+      CustomError(res, 400, 'Код не действителен.');
+      return;
     }
 
     await deleteCode(code);
-    return await authUserWithResponse(res, codeData._id);
+    await authUserWithResponse(res, codeData._id);
+    return;
   } catch (err) {
     CustomError(res, 500, ERROR_MESSAGE, err);
   }

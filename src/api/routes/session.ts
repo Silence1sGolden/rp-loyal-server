@@ -11,25 +11,25 @@ sessionRouter.post('/', async (req, res) => {
   const refreshToken = req.body.refreshToken;
 
   if (!refreshToken) {
-    return CustomError(res, 400, 'Токен не найден.');
+    CustomError(res, 400, 'Токен не найден.'); return;
   }
 
   try {
     const payload = getTokenPayload<TRefreshTokenBody>(refreshToken);
 
     if (!payload.sessionID) {
-      return CustomError(res, 400, 'Токен не действителен.');
+      CustomError(res, 400, 'Токен не действителен.'); return;
     }
 
     const session = await getSessionByID(payload.sessionID);
 
     if (!session) {
-      return CustomError(res, 400, 'Сессия не найдена.');
+      CustomError(res, 400, 'Сессия не найдена.'); return;
     }
 
     await deleteSession(payload.sessionID);
-    authUserWithResponse(res, session!.id);
+    authUserWithResponse(res, session.id);
   } catch (err) {
-    return CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500, ERROR_MESSAGE, err); return;
   }
 });
