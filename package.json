@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' -r tsconfig-paths/register src/server.ts",
+    "dev": "nodemon --watch 'src/**/*.ts' -r tsconfig-paths/register src/server.ts",
     "start": "node dist/server.js",
-    "lint": "eslint 'src/**/*.ts"
+    "lint": "npx eslint src/**/*.ts",
+    "setup-hooks": "chmod +x scripts/pre-commit.sh && cp scripts/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
   },
   "repository": {
     "type": "git",
@@ -33,16 +34,19 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "node-json-db": "^2.3.1",
-    "nodemailer": "^6.10.0"
+    "nodemailer": "^6.10.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
     "@types/express": "^5.0.1",
     "@types/node": "^22.14.0",
-    "eslint": "^9.23.0",
+    "eslint": "^9.35.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.43.0"
   }
 }
