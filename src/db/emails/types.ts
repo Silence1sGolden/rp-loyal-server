@@ -1,3 +1,3 @@
 import { UUID } from 'crypto';
 
-export type TEmail = { email: string; id: UUID };
+export interface TEmail { email: string; id: UUID }

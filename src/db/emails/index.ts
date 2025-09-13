@@ -9,11 +9,11 @@ const getEmails = async (): Promise<TEmail[]> => {
 };
 
 const setEmails = async (emails: TEmail[]): Promise<void> => {
-  return await emailsDB.push('/emails', emails);
+  await emailsDB.push('/emails', emails);
 };
 
 export const createEmail = async (email: TEmail): Promise<void> => {
-  return await getEmails().then((emails) => {
+  await getEmails().then((emails) => {
     return setEmails([...emails, email]);
   });
 };
@@ -33,13 +33,13 @@ export const getEmailByEmail = async (
 };
 
 export const deleteEmailByID = async (id: UUID): Promise<void> => {
-  return await getEmails().then(async (emails) => {
-    return await setEmails(emails.filter((email) => email.id !== id));
+  await getEmails().then(async (emails) => {
+    await setEmails(emails.filter((email) => email.id !== id));
   });
 };
 
 export const deleteEmailByEmail = async (email: string): Promise<void> => {
-  return await getEmails().then(async (emails) => {
-    return await setEmails(emails.filter((item) => item.email !== email));
+  await getEmails().then(async (emails) => {
+    await setEmails(emails.filter((item) => item.email !== email));
   });
 };
