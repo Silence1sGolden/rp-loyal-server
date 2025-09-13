@@ -6,7 +6,7 @@ import { UUID } from 'crypto';
 
 const codesDB = new JsonDB(new Config('./src/db/codes/db', true, false, '/'));
 
-export const getCodes = async (): Promise<TCodeVerify> => {
+const getCodes = async (): Promise<TCodeVerify> => {
   return await codesDB.getData('/codes');
 };
 export const findCode = async (
@@ -21,19 +21,34 @@ export const createCode = async (
   code: number,
   data?: (TRegister | TLogin) & { res?: Response },
 ): Promise<void> => {
-  return await codesDB.getData('/codes').then(async (codes: TCodeVerify) => {
+  await codesDB.getData('/codes').then(async (codes: TCodeVerify) => {
     codes[code] = {
       _id: id,
       createdAt: Date.now(),
       email: data?.email,
       password: data?.password,
     };
-    return await codesDB.push('/codes', codes);
+    await codesDB.push('/codes', codes);
   });
 };
 export const deleteCode = async (code: number): Promise<void> => {
-  return await getCodes().then(async (codes) => {
+  await getCodes().then(async (codes) => {
+    // eslint-disable-next-line
     delete codes[code];
-    return await codesDB.push('/codes', codes);
+    await codesDB.push('/codes', codes);
   });
+};
+export const clearExpiredCodes = async () => {
+  try {
+    const codes = await getCodes();
+    const keys = Object.keys(codes);
+
+    keys.forEach(async (code) => {
+      if (Date.now() - codes[+code].createdAt > 5 * 60 * 1000) {
+        await deleteCode(+code);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
