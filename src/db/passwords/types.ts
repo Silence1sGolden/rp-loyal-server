@@ -1,1 +1,3 @@
-export type TPassword = Record<string, string>;
+import { UUID } from 'crypto';
+
+export type TPassword = Record<UUID, string>;
