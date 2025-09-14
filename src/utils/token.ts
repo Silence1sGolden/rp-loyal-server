@@ -5,7 +5,6 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { StringValue } from 'ms';
 import { CustomError } from './service';
 import { getSessionByID } from '@/db/sessions';
-import { ERROR_MESSAGE } from '@/data/constans';
 
 export const createToken = (
   payload: object,
@@ -62,6 +61,6 @@ export const verifyTokenHandler: RequestHandler = async (
       console.log('INVALID_SIGNATURE', req);
     }
 
-    CustomError(res, 500, ERROR_MESSAGE, err);
+    CustomError(res, 500);
   }
 };
