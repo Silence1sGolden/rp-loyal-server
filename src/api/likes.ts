@@ -1,4 +1,3 @@
-import { ERROR_MESSAGE } from '@/data/constans';
 import { getProfileByID, likeProfile } from '@/db/profiles';
 import { TAccessTokenBody } from '@/db/sessions/types';
 import { getCookie } from '@/utils/cookie';
@@ -53,7 +52,7 @@ likesRouter.get('/:id', async (req, res) => {
 
     res.status(200).send({ status: true, data: null });
   } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
-    return;
+    console.log(err);
+    CustomError(res, 500);
   }
 });
