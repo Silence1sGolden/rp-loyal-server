@@ -9,7 +9,6 @@ import {
 import { Router } from 'express';
 import { createCode, deleteCode, findCode } from '@/db/codes';
 import { getEmailByEmail } from '@/db/emails';
-import { ERROR_MESSAGE } from '@/data/constans';
 import { ILogin } from './types';
 import { getPasswordByID } from '@/db/passwords';
 
@@ -52,7 +51,8 @@ authRouter.post('/', async (req, res) => {
       .status(200)
       .send({ status: true, data: 'The code has been sent to your email.' });
   } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
+    console.log(err);
+    CustomError(res, 500);
   }
 });
 
@@ -78,6 +78,7 @@ authRouter.post('/code', async (req, res) => {
 
     res.status(200).send({ status: true, data: tokens });
   } catch (err) {
-    CustomError(res, 500, ERROR_MESSAGE, err);
+    console.log(err);
+    CustomError(res, 500);
   }
 });
