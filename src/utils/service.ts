@@ -1,24 +1,10 @@
 import { Response } from 'express';
-import * as dotenv from 'dotenv';
-import { deleteCode, getCodes } from '@/db/codes/codes';
-import { Secret } from 'jsonwebtoken';
 import { TProfile } from '@/db/profiles/types';
 import { randomUUID, UUID } from 'crypto';
-import {
-  createSession,
-  deleteSession,
-  getSessionByID,
-  getSessions,
-} from '@/db/sessions/sessions';
+import { createSession, deleteSession, getSessionByID } from '@/db/sessions';
 import ms from 'ms';
 import { createToken } from './token';
-
-dotenv.config();
-export const BASE_URL = process.env.BASE_URL || 'http://192.168.1.100:3000';
-export const EMAIL = process.env.EMAIL;
-export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
-export const ERROR_MESSAGE = 'У нас что-то сломалось, попробуйте позже ;(';
-export const SECRET: Secret = process.env.SECRET || 'secret';
+import { defaultErrors } from '@/data/errors';
 
 export function getRandomCode(): number {
   return Math.round(Math.random() * (999999 - 100000) + 100000);
@@ -26,38 +12,36 @@ export function getRandomCode(): number {
 
 export function CustomError(
   res: Response,
-  resErrorCode?: number,
+  resErrorCode = 500,
   resErrorText?: string,
-  devError?: Error | string | unknown,
+  devError?: unknown,
 ) {
-  if (resErrorCode && resErrorText) {
+  if (devError) console.error(`${resErrorCode}: ${devError}`);
+  if (resErrorText) {
     res.status(resErrorCode).send({ error: resErrorText });
   } else {
-    res.status(505).send({ error: resErrorText });
+    res.status(resErrorCode).send({ error: defaultErrors[resErrorCode] });
   }
-  devError && console.error(`${resErrorCode}: ${devError}`);
 }
 
 export function checkFields<T>(obj: T, fields: (keyof T)[]): string | null {
-  if (!obj) {
-    return 'Данные отсутсвуют.';
-  }
-  if (typeof obj !== 'object') {
-    return 'Данные не являются обьектом.';
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+    return 'Data Not Available';
   }
   fields.forEach((key) => {
     if (!(key in obj) || !obj[key]) {
-      return `Поле ${String(key)} нет в обьекте или оно пустое.`;
+      return `Field ${String(key)} is missing.`;
     }
   });
   return null;
 }
 
-export function createNewProfile(id: UUID, useranme: string): TProfile {
+export function getBlankProfile(): TProfile {
   return {
-    _id: id,
-    username: useranme,
+    _id: randomUUID(),
+    username: '',
     profileIMG: '',
+    backgroundIMG: '',
     about: '',
     stats: {
       likes: [],
@@ -70,49 +54,15 @@ export function createNewProfile(id: UUID, useranme: string): TProfile {
   };
 }
 
-export const clearCodes = async () => {
-  console.log('Проверка итсёкших кодов:...');
-  try {
-    const codes = await getCodes();
-    const keys = Object.keys(codes);
-
-    keys.forEach(async (code) => {
-      if (Date.now() - codes[+code].createdAt > 5 * 60 * 1000) {
-        console.log(code + ' был удалён.');
-        await deleteCode(+code);
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-  console.log('Проверка завершена.');
-};
-
-export const clearSessions = async () => {
-  console.log('Проверка итсёкших сессий:...');
-  try {
-    const sessions = await getSessions();
-    const values = Object.values(sessions);
-
-    values.forEach(async (session) => {
-      if (Date.now() > session.deathTime) {
-        console.log(session.id + ' был удалён.');
-        await deleteSession(session.sessionID);
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-  console.log('Проверка завершена.');
-};
-
 export const getKeysOfObject = <T extends object, A extends keyof T>(
   data: T,
 ): A[] => {
   return Object.keys(data) as A[];
 };
 
-export const authUserWithResponse = async (res: Response, id: UUID) => {
+export const setAuthUser = async (
+  id: UUID,
+): Promise<{ accessToken: string; refreshToken: string }> => {
   const elseSessions = await getSessionByID(id);
 
   if (elseSessions) {
@@ -140,11 +90,8 @@ export const authUserWithResponse = async (res: Response, id: UUID) => {
     deathTime: Date.now() + ms('24HOUR'),
   });
 
-  res.status(200).send({
-    status: true,
-    data: {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    },
-  });
+  return {
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  };
 };
