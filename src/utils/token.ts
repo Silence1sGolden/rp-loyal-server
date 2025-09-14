@@ -3,7 +3,7 @@ import { UUID } from 'crypto';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { StringValue } from 'ms';
-import { CustomError } from './service';
+import { checkFields, CustomError } from './service';
 import { getSessionByID } from '@/db/sessions';
 
 export const createToken = (
@@ -35,14 +35,15 @@ export const verifyTokenHandler: RequestHandler = async (
       return;
     }
 
-    const { id, sessionID } = getTokenPayload<TAccessTokenBody>(token);
+    const payload = getTokenPayload<TAccessTokenBody>(token);
+    const check = checkFields(payload, ['id', 'sessionID']);
 
-    if (!id || !sessionID) {
+    if (check) {
       CustomError(res, 401);
       return;
     }
 
-    const session = await getSessionByID(sessionID);
+    const session = await getSessionByID(payload.sessionID);
 
     if (!session) {
       CustomError(res, 401);

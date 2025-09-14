@@ -8,8 +8,8 @@ export type TProfile = IProfileForChange & {
 
 export interface IProfileForChange {
   username: string;
-  profileIMG: string;
-  backgroundIMG: string;
+  avatar: string;
+  background: string;
   about: string;
   status: string;
   likesTags: string[];

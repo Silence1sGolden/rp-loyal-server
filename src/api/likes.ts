@@ -1,7 +1,6 @@
 import { getProfileByID, likeProfile } from '@/db/profiles';
 import { TAccessTokenBody } from '@/db/sessions/types';
-import { getCookie } from '@/utils/cookie';
-import { checkFields, CustomError } from '@/utils/service';
+import { CustomError } from '@/utils/service';
 import { getTokenPayload, verifyTokenHandler } from '@/utils/token';
 import { UUID } from 'crypto';
 import { Router } from 'express';
@@ -11,34 +10,16 @@ export const likesRouter = Router();
 likesRouter.use(verifyTokenHandler);
 
 likesRouter.get('/:id', async (req, res) => {
-  const id = req.params.id as UUID;
+  const targetID = req.params.id as UUID;
 
-  if (!id) {
+  if (!targetID) {
     CustomError(res, 400);
     return;
   }
 
-  const cookie = req.headers.cookie;
-
-  if (!cookie) {
-    CustomError(res, 401);
-    return;
-  }
-
-  const token = getCookie('accessToken', cookie);
-
-  if (!token) {
-    CustomError(res, 401);
-    return;
-  }
-
-  const payload = getTokenPayload<TAccessTokenBody>(token);
-  const check = checkFields(payload, ['id', 'sessionID']);
-
-  if (check) {
-    CustomError(res, 401);
-    return;
-  }
+  // eslint-disable-next-line
+  const token = req.headers.authorization!;
+  const { id } = getTokenPayload<TAccessTokenBody>(token);
 
   try {
     const profile = await getProfileByID(id);
@@ -48,7 +29,7 @@ likesRouter.get('/:id', async (req, res) => {
       return;
     }
 
-    await likeProfile(id, payload.id);
+    await likeProfile(id, targetID);
 
     res.status(200).send({ status: true, data: null });
   } catch (err) {

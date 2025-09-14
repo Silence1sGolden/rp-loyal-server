@@ -40,7 +40,8 @@ export const updateProfile = async (
   if (newProfile) {
     newProfile.about = profile.about;
     newProfile.likesTags = profile.likesTags;
-    newProfile.profileIMG = profile.profileIMG;
+    newProfile.avatar = profile.avatar;
+    newProfile.background = profile.background;
     newProfile.status = profile.status;
     newProfile.username = profile.username;
 
@@ -51,14 +52,14 @@ export const updateProfile = async (
   }
 };
 
-export const likeProfile = async (id: UUID, userID: UUID): Promise<void> => {
+export const likeProfile = async (id: UUID, targetID: UUID): Promise<void> => {
   const profile = await getProfileByID(id);
 
   if (profile) {
-    if (profile.stats.likes.find((item) => item === userID)) {
-      profile.stats.likes.filter((item) => item !== userID);
+    if (profile.stats.likes.find((item) => item === targetID)) {
+      profile.stats.likes.filter((item) => item !== targetID);
     } else {
-      profile.stats.likes.push(userID);
+      profile.stats.likes.push(targetID);
     }
 
     const profiles = await getProfiles();

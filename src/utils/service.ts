@@ -40,8 +40,8 @@ export function getBlankProfile(): TProfile {
   return {
     _id: randomUUID(),
     username: '',
-    profileIMG: '',
-    backgroundIMG: '',
+    avatar: '',
+    background: '',
     about: '',
     stats: {
       likes: [],
