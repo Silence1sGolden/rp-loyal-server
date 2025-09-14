@@ -48,7 +48,7 @@ export const updateSession = async (
   });
 };
 
-export const clearSessions = async () => {
+export const clearExpiredSessions = async () => {
   try {
     const sessions = await getSessions();
     const values = Object.values(sessions);
