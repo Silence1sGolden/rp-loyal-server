@@ -6,11 +6,11 @@ const sessionsDB = new JsonDB(
   new Config('./src/db/sessions/db', true, false, '/'),
 );
 
-export const getSessions = async (): Promise<TSession[]> => {
+const getSessions = async (): Promise<TSession[]> => {
   return await sessionsDB.getData('/sessions');
 };
 
-export const setSessions = async (sessions: TSession[]): Promise<void> => {
+const setSessions = async (sessions: TSession[]): Promise<void> => {
   await sessionsDB.push('/sessions', sessions);
 };
 
@@ -23,14 +23,14 @@ export const getSessionByID = async (
 };
 
 export const createSession = async (data: TSession): Promise<void> => {
-  return await getSessions().then(async (sessions) => {
-    return await setSessions([...sessions, data]);
+  await getSessions().then(async (sessions) => {
+    await setSessions([...sessions, data]);
   });
 };
 
 export const deleteSession = async (sessionID: UUID): Promise<void> => {
-  return await getSessions().then(async (sessions) => {
-    return await setSessions(
+  await getSessions().then(async (sessions) => {
+    await setSessions(
       sessions.filter((session) => session.sessionID !== sessionID),
     );
   });
@@ -40,10 +40,25 @@ export const updateSession = async (
   sessionID: UUID,
   data: TSession,
 ): Promise<void> => {
-  return await getSessions().then(async (sessions) => {
-    return await setSessions([
+  await getSessions().then(async (sessions) => {
+    await setSessions([
       ...sessions.filter((session) => session.sessionID !== sessionID),
       data,
     ]);
   });
+};
+
+export const clearSessions = async () => {
+  try {
+    const sessions = await getSessions();
+    const values = Object.values(sessions);
+
+    values.forEach(async (session) => {
+      if (Date.now() > session.deathTime) {
+        await deleteSession(session.sessionID);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
