@@ -1,46 +1,36 @@
 import { UUID } from 'crypto';
 
-export type TProfile = TProfileForChange & {
+export type TProfile = IProfileForChange & {
   _id: UUID;
-  stats: TStats;
-  roles: TRolesForm[];
-  isDeleted?: boolean;
-  isBanned?: boolean;
+  stats: IStats;
+  roles: UUID[];
 };
 
-export type TProfileForChange = {
+export interface IProfileForChange {
   username: string;
   profileIMG: string;
+  backgroundIMG: string;
   about: string;
   status: string;
   likesTags: string[];
-};
+}
 
-export type TDeletedProfile = {
-  _id: UUID;
-  profile: TProfile;
-  deleteAt: number;
-  reason?: string;
-};
-
-export type TBannedProfile = {
-  _id: UUID;
-  profile: TProfile;
-  bannedAt: number;
-  reason: string;
-};
-
-export type TStats = {
+export interface IStats {
   likes: string[];
   rewards: string[];
   fans: string[];
-};
+}
 
-export type TRolesForm = {
-  _id: UUID;
-  title: string;
-  author: TProfile;
-  tags: string[];
-  about: string;
-  rolesIMG: string;
-};
+// export interface TDeletedProfile {
+//   _id: UUID;
+//   profile: TProfile;
+//   deleteAt: number;
+//   reason: string;
+// }
+
+// export interface TBannedProfile {
+//   _id: UUID;
+//   profile: TProfile;
+//   bannedAt: number;
+//   reason: string;
+// }
