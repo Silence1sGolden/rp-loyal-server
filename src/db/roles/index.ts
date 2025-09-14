@@ -1,20 +1,21 @@
 import { Config, JsonDB } from 'node-json-db';
-import { TRoles, TRolesForChange, TSearchParams } from './types';
+import { TRoles, IRolesForChange, ISearchParams } from './types';
 import { UUID } from 'crypto';
+import { getProfileByID } from '../profiles';
 
 const rolesDB = new JsonDB(new Config('./src/db/roles/db', true, false, '/'));
 
-export const getRoles = async (): Promise<TRoles[]> => {
+const getRoles = async (): Promise<TRoles[]> => {
   return await rolesDB.getData('/roles');
 };
 
-export const setRoles = async (rooms: TRoles[]): Promise<void> => {
-  return await rolesDB.push('/roles', rooms);
+const setRoles = async (rooms: TRoles[]): Promise<void> => {
+  await rolesDB.push('/roles', rooms);
 };
 
 export const getRolesWithFilter = async (
   id: UUID,
-  filter: TSearchParams,
+  filter: ISearchParams,
 ): Promise<TRoles[]> => {
   const roles = await getRoles();
 
@@ -37,9 +38,11 @@ export const getRolesWithFilter = async (
         return true;
       }
     })
-    .filter((role) => {
+    .filter(async (role) => {
       if (filter.likes) {
-        if (role.author.stats.likes.includes(id)) {
+        const author = await getProfileByID(role.author);
+
+        if (author && author.stats.likes.includes(id)) {
           return true;
         } else {
           return false;
@@ -52,33 +55,31 @@ export const getRolesWithFilter = async (
 
 export const getRolesByID = async (id: UUID): Promise<TRoles | undefined> => {
   const roles = await getRoles();
-
   return roles.find((role) => role._id === id);
 };
 
 export const createRoles = async (role: TRoles): Promise<void> => {
   const roles = await getRoles();
-
   await setRoles([...roles, role]);
 };
 
 export const deleteRoles = async (id: UUID): Promise<void> => {
   const roles = await getRoles();
-
   await setRoles(roles.filter((role) => role._id !== id));
 };
 
 export const updateRoles = async (
   id: UUID,
-  data: TRolesForChange,
+  data: IRolesForChange,
 ): Promise<void> => {
   const roles = await getRoles();
   const role = await getRolesByID(id);
 
   if (role) {
-    role.about = data.about;
+    role.description = data.description;
     role.ganre = data.ganre;
-    role.rolesIMG = data.rolesIMG;
+    role.avatar = data.avatar;
+    role.background = data.background;
     role.tags = data.tags;
     role.title = data.title;
 

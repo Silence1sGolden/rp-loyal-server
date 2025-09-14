@@ -1,26 +1,21 @@
 import { UUID } from 'crypto';
-import { TProfile } from '../profiles/types';
 
-export type TRoles = TRolesForChange & {
+export type TRoles = IRolesForChange & {
   _id: UUID;
-  author: TProfile;
+  author: UUID;
 };
 
-export type TRolesForChange = {
+export interface IRolesForChange {
   title: string;
+  avatar: string;
+  background: string;
   tags: string[];
   ganre: string[];
-  about: string;
-  rolesIMG: string;
-};
+  description: string;
+}
 
-export type TSearchParams = {
+export interface ISearchParams {
   tags?: string[];
   ganre?: string[];
   likes?: boolean;
-  age?: {
-    '16+'?: boolean;
-    '18+'?: boolean;
-    '21+'?: boolean;
-  };
-};
+}
