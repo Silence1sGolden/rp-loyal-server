@@ -1,21 +1,21 @@
-import { TAccessTokenBody } from '@/db/sessions/types';
-import { UUID } from 'crypto';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { StringValue } from 'ms';
 import { checkFields, CustomError } from './service';
-import { getSessionByID } from '@/db/sessions';
+import { JWT_KEY } from '@/data/constans';
+import { getSession } from '@/db/sessions';
+import { TTokenBody } from '@/models/token';
 
 export const createToken = (
   payload: object,
-  key: UUID,
+  key: string,
   expriresIn: number | StringValue | undefined,
 ): string => {
   return jwt.sign(payload, key, { expiresIn: expriresIn } as SignOptions);
 };
 
-export const verifyToken = <T>(token: string, key: UUID): T => {
-  return jwt.verify(token, key) as T;
+export const verifyToken = <T>(token: string): T => {
+  return jwt.verify(token, JWT_KEY) as T;
 };
 
 export const getTokenPayload = <T>(token: string): T => {
@@ -35,22 +35,22 @@ export const verifyTokenHandler: RequestHandler = async (
       return;
     }
 
-    const payload = getTokenPayload<TAccessTokenBody>(token);
-    const check = checkFields(payload, ['id', 'sessionID']);
+    const payload = getTokenPayload<TTokenBody>(token);
+    const check = checkFields(payload, ['userID', 'sessionID']);
 
     if (check) {
       CustomError(res, 401);
       return;
     }
 
-    const session = await getSessionByID(payload.sessionID);
+    const session = await getSession(payload.userID, payload.sessionID);
 
     if (!session) {
       CustomError(res, 401);
       return;
     }
 
-    jwt.verify(token, session.key);
+    jwt.verify(token, JWT_KEY);
 
     if (next) {
       next();

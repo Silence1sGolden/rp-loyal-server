@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' -r tsconfig-paths/register src/server.ts",
+    "dev": "nodemon --watch src/**/*.ts -r tsconfig-paths/register src/server.ts",
     "start": "node dist/server.js",
     "lint": "npx eslint src/**/*.ts",
     "setup-hooks": "chmod +x scripts/pre-commit.sh && cp scripts/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"

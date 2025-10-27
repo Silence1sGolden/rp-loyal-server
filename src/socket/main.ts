@@ -1,6 +1,5 @@
-import { getSessionByID } from '@/db/sessions/sessions';
-import { TAccessTokenBody } from '@/db/sessions/types';
-import { ERROR_MESSAGE } from '@/utils/service';
+import { getSession } from '@/db/sessions';
+import { TTokenBody } from '@/models/token';
 import { getTokenPayload, verifyToken } from '@/utils/token';
 import { Server, Socket } from 'socket.io';
 
@@ -20,14 +19,14 @@ export const socketAuthHandler = async (io: Server, socket: Socket) => {
   }
 
   try {
-    const payload = getTokenPayload<TAccessTokenBody>(token);
-    const session = await getSessionByID(payload.sessionID);
+    const payload = getTokenPayload<TTokenBody>(token);
+    const session = await getSession(payload.userID, payload.sessionID);
     if (!session) {
       socket.emit('error', 'Сессия отсутствует.');
       return socket.disconnect(true);
     }
 
-    const data = await verifyToken<TAccessTokenBody>(token, session.key);
+    const data = await verifyToken<TTokenBody>(token);
 
     if (data) {
       return;
@@ -40,7 +39,7 @@ export const socketAuthHandler = async (io: Server, socket: Socket) => {
       return socket.disconnect(true);
     }
 
-    socket.emit('error', ERROR_MESSAGE);
+    socket.emit('error');
     return socket.disconnect(true);
   }
 };

@@ -1,9 +1,12 @@
 import { Config, JsonDB } from 'node-json-db';
-import { TRoles, IRolesForChange, ISearchParams } from './types';
 import { UUID } from 'crypto';
-import { getProfileByID } from '../profiles';
+import { getProfileByUserID } from './profiles';
+import { IRolesForChange, ISearchParams, TRoles } from '@/models/data';
+import path from 'path';
 
-const rolesDB = new JsonDB(new Config('./src/db/roles/db', true, false, '/'));
+const rolesDB = new JsonDB(
+  new Config(path.join(__dirname, 'data.db.json'), true, false, '/'),
+);
 
 const getRoles = async (): Promise<TRoles[]> => {
   return await rolesDB.getData('/roles');
@@ -40,7 +43,7 @@ export const getRolesWithFilter = async (
     })
     .filter(async (role) => {
       if (filter.likes) {
-        const author = await getProfileByID(role.author);
+        const author = await getProfileByUserID(role.author);
 
         if (author && author.stats.likes.includes(id)) {
           return true;

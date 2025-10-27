@@ -1,5 +1,5 @@
-import { getProfileByID, likeProfile } from '@/db/profiles';
-import { TAccessTokenBody } from '@/db/sessions/types';
+import { getProfileByUserID, likeProfile } from '@/db/profiles';
+import { TTokenBody } from '@/models/token';
 import { CustomError } from '@/utils/service';
 import { getTokenPayload, verifyTokenHandler } from '@/utils/token';
 import { UUID } from 'crypto';
@@ -19,17 +19,17 @@ likesRouter.get('/:id', async (req, res) => {
 
   // eslint-disable-next-line
   const token = req.headers.authorization!;
-  const { id } = getTokenPayload<TAccessTokenBody>(token);
+  const { userID } = getTokenPayload<TTokenBody>(token);
 
   try {
-    const profile = await getProfileByID(id);
+    const profile = await getProfileByUserID(userID);
 
     if (!profile) {
       CustomError(res, 400);
       return;
     }
 
-    await likeProfile(id, targetID);
+    await likeProfile(userID, targetID);
 
     res.status(200).send({ status: true, data: null });
   } catch (err) {

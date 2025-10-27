@@ -1,8 +1,28 @@
 import { UUID } from 'crypto';
 
+export interface TRoom {
+  rolesID: UUID;
+  users: IRoomUser[];
+  createdAt: string;
+  messages: TMessage[];
+}
+
+export interface IRoomUser {
+  userID: number;
+  permission: 'admin' | 'member';
+}
+
+export interface TMessage {
+  roomID: UUID;
+  userID: number;
+  message: string;
+  sendAt: string;
+  updateAt: string;
+}
+
 export type TRoles = IRolesForChange & {
   _id: UUID;
-  author: UUID;
+  author: number;
 };
 
 export interface IRolesForChange {

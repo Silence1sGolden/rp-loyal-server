@@ -1,18 +1,20 @@
+import { TResetLink } from '@/models/types';
 import { Config, JsonDB } from 'node-json-db';
-import { TResetLink } from './types';
-import { UUID } from 'crypto';
+import path from 'path';
 
-const resetDB = new JsonDB(new Config('./src/db/reset/db', true, false, '/'));
+const resetDB = new JsonDB(
+  new Config(path.join(__dirname, 'auth.db.json'), true, false, '/'),
+);
 
 export const getResets = async (): Promise<TResetLink> => {
   return await resetDB.getData('/reset');
 };
 
 export const setResets = async (resets: TResetLink): Promise<void> => {
-  return await resetDB.push('/reset', resets);
+  await resetDB.push('/reset', resets);
 };
 
-export const getReset = async (link: string): Promise<UUID | undefined> => {
+export const getReset = async (link: string): Promise<number | undefined> => {
   const resets = await getResets();
 
   return resets[link];
@@ -23,13 +25,16 @@ export const deleteReset = async (link: string): Promise<void> => {
 
   delete resets[link];
 
-  return await setResets(resets);
+  await setResets(resets);
 };
 
-export const createReset = async (link: string, id: UUID): Promise<void> => {
+export const createReset = async (
+  link: string,
+  userID: number,
+): Promise<void> => {
   const resets = await getResets();
 
-  resets[link] = id;
+  resets[link] = userID;
 
-  return await setResets(resets);
+  await setResets(resets);
 };

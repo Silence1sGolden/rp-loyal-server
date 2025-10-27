@@ -1,10 +1,6 @@
 import { Response } from 'express';
-import { TProfile } from '@/db/profiles/types';
-import { randomUUID, UUID } from 'crypto';
-import { createSession, deleteSession, getSessionByID } from '@/db/sessions';
-import ms from 'ms';
-import { createToken } from './token';
 import { defaultErrors } from '@/data/errors';
+import { TProfile } from '@/models/profile';
 
 export function getRandomCode(): number {
   return Math.round(Math.random() * (999999 - 100000) + 100000);
@@ -36,9 +32,9 @@ export function checkFields<T>(obj: T, fields: (keyof T)[]): string | null {
   return null;
 }
 
-export function getBlankProfile(): TProfile {
+export function getBlankProfile(options?: Partial<TProfile>): TProfile {
   return {
-    _id: randomUUID(),
+    userID: 0,
     username: '',
     avatar: '',
     background: '',
@@ -51,6 +47,7 @@ export function getBlankProfile(): TProfile {
     status: '',
     likesTags: [],
     roles: [],
+    ...options,
   };
 }
 
@@ -58,40 +55,4 @@ export const getKeysOfObject = <T extends object, A extends keyof T>(
   data: T,
 ): A[] => {
   return Object.keys(data) as A[];
-};
-
-export const setAuthUser = async (
-  id: UUID,
-): Promise<{ accessToken: string; refreshToken: string }> => {
-  const elseSessions = await getSessionByID(id);
-
-  if (elseSessions) {
-    deleteSession(elseSessions.sessionID);
-  }
-
-  const key = randomUUID();
-  const sessionID = randomUUID();
-
-  const accessToken = createToken(
-    { id: id, sessionID: sessionID },
-    key,
-    Date.now() + ms('5MIN'),
-  );
-  const refreshToken = createToken(
-    { sessionID: sessionID },
-    key,
-    Date.now() + ms('24HOUR'),
-  );
-
-  await createSession({
-    id: id,
-    sessionID: sessionID,
-    key: key,
-    deathTime: Date.now() + ms('24HOUR'),
-  });
-
-  return {
-    accessToken: accessToken,
-    refreshToken: refreshToken,
-  };
 };

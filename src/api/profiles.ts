@@ -1,17 +1,16 @@
-import { TAccessTokenBody } from '@/db/sessions/types';
-import { IProfileForChange } from '@/db/profiles/types';
-import { getProfileByID, updateProfile } from '@/db/profiles';
+import { getProfileByUserID, updateProfile } from '@/db/profiles';
 import { checkFields, CustomError } from '@/utils/service';
-import { UUID } from 'crypto';
 import { Router } from 'express';
 import { getTokenPayload, verifyTokenHandler } from '@/utils/token';
+import { TTokenBody } from '@/models/token';
+import { IProfileForChange } from '@/models/profile';
 
 export const profilesRouter = Router();
 
 profilesRouter.use(verifyTokenHandler);
 
 profilesRouter.get('/:id', async (req, res) => {
-  const id = req.params.id as UUID;
+  const id = req.params.id;
 
   if (!id) {
     CustomError(res, 400);
@@ -19,7 +18,7 @@ profilesRouter.get('/:id', async (req, res) => {
   }
 
   try {
-    const user = await getProfileByID(id);
+    const user = await getProfileByUserID(+id);
 
     if (!user) {
       CustomError(res, 404);
@@ -34,7 +33,7 @@ profilesRouter.get('/:id', async (req, res) => {
 });
 
 profilesRouter.post('/:id', async (req, res) => {
-  const targetID = req.params.id as UUID;
+  const targetID = req.params.id;
 
   if (!targetID) {
     CustomError(res, 400);
@@ -43,9 +42,9 @@ profilesRouter.post('/:id', async (req, res) => {
 
   // eslint-disable-next-line
   const token = req.headers.authorization!;
-  const { id } = getTokenPayload<TAccessTokenBody>(token);
+  const { userID } = getTokenPayload<TTokenBody>(token);
 
-  if (targetID !== id) {
+  if (+targetID !== userID) {
     CustomError(res, 400);
     return;
   }
@@ -66,8 +65,8 @@ profilesRouter.post('/:id', async (req, res) => {
   }
 
   try {
-    await updateProfile(id, data);
-    const newProfile = await getProfileByID(id);
+    await updateProfile(userID, data);
+    const newProfile = await getProfileByUserID(userID);
 
     res.status(200).send({ status: true, data: newProfile });
   } catch (err) {

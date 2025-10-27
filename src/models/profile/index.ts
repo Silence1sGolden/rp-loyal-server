@@ -1,7 +1,7 @@
 import { UUID } from 'crypto';
 
 export type TProfile = IProfileForChange & {
-  _id: UUID;
+  userID: number;
   stats: IStats;
   roles: UUID[];
 };
@@ -20,17 +20,3 @@ export interface IStats {
   rewards: string[];
   fans: string[];
 }
-
-// export interface TDeletedProfile {
-//   _id: UUID;
-//   profile: TProfile;
-//   deleteAt: number;
-//   reason: string;
-// }
-
-// export interface TBannedProfile {
-//   _id: UUID;
-//   profile: TProfile;
-//   bannedAt: number;
-//   reason: string;
-// }

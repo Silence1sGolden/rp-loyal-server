@@ -1,9 +1,10 @@
 import { Config, JsonDB } from 'node-json-db';
-import { TProfile, IProfileForChange } from './types';
 import { UUID } from 'crypto';
+import { IProfileForChange, TProfile } from '@/models/profile';
+import path from 'path';
 
 const profilesDB = new JsonDB(
-  new Config('./src/db/profiles/db', true, false, '/'),
+  new Config(path.join(__dirname, 'profiles.db.json'), true, false, '/'),
 );
 
 const getProfiles = async (): Promise<TProfile[]> => {
@@ -14,11 +15,11 @@ const setProfiles = async (users: TProfile[]): Promise<void> => {
   await profilesDB.push('/profiles', users);
 };
 
-export const getProfileByID = async (
-  id: UUID,
+export const getProfileByUserID = async (
+  id: number,
 ): Promise<TProfile | undefined> => {
   const profiles = await getProfiles();
-  return profiles.find((item) => item._id === id);
+  return profiles.find((item) => item.userID === id);
 };
 
 export const createProfile = async (user: TProfile): Promise<void> => {
@@ -31,11 +32,11 @@ export const createProfile = async (user: TProfile): Promise<void> => {
 };
 
 export const updateProfile = async (
-  id: UUID,
+  userID: number,
   profile: IProfileForChange,
 ): Promise<void> => {
   const profiles = await getProfiles();
-  const newProfile = profiles.find((item) => item._id === id);
+  const newProfile = profiles.find((item) => item.userID === userID);
 
   if (newProfile) {
     newProfile.about = profile.about;
@@ -46,14 +47,17 @@ export const updateProfile = async (
     newProfile.username = profile.username;
 
     await setProfiles([
-      ...profiles.filter((item) => item._id !== id),
+      ...profiles.filter((item) => item.userID !== userID),
       newProfile,
     ]);
   }
 };
 
-export const likeProfile = async (id: UUID, targetID: UUID): Promise<void> => {
-  const profile = await getProfileByID(id);
+export const likeProfile = async (
+  userID: number,
+  targetID: UUID,
+): Promise<void> => {
+  const profile = await getProfileByUserID(userID);
 
   if (profile) {
     if (profile.stats.likes.find((item) => item === targetID)) {
@@ -64,7 +68,10 @@ export const likeProfile = async (id: UUID, targetID: UUID): Promise<void> => {
 
     const profiles = await getProfiles();
 
-    await setProfiles([...profiles.filter((item) => item._id !== id), profile]);
+    await setProfiles([
+      ...profiles.filter((item) => item.userID !== userID),
+      profile,
+    ]);
   }
 };
 
