@@ -1,24 +1,14 @@
-import { UUID } from 'crypto';
+export type TErrorCodes = 400 | 401 | 403 | 404 | 500;
+export type TSuccesCodes = 200 | 201;
+export type TCodes = TErrorCodes | TSuccesCodes;
 
-export type TRoles = {
-  _id: UUID;
-  title: string;
-  rolesImage: string;
+export type TErrorResponse = {
+  status: TErrorCodes;
+  error: string;
+  message?: string;
 };
 
-export type TMessage = {
-  _id: UUID;
-  author: string;
-  authorIMG: string;
+export type TSuccessResponse = {
+  status: TSuccesCodes;
   message: string;
-  sendAt: string;
-};
-
-export type TLogin = {
-  email: string;
-  password: string;
-};
-
-export type TRegister = TLogin & {
-  username: string;
 };

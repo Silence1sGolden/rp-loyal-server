@@ -1,13 +1,13 @@
 {
   "name": "rp-loyal-server",
   "version": "1.0.0",
-  "description": "server for rp-loyal",
-  "main": "index.js",
+  "private": true,
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' -r tsconfig-paths/register src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "lint": "eslint 'src/**/*.ts"
+    "lint": "eslint 'src/**/*.ts'"
   },
   "repository": {
     "type": "git",
@@ -20,26 +20,24 @@
   },
   "homepage": "https://github.com/Silence1sGolden/rp-loyal-server#readme",
   "dependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/cors": "^2.8.17",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/nodemailer": "^6.4.17",
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "node-json-db": "^2.3.1",
-    "nodemailer": "^6.10.0"
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "handlebars": "^4.7.9",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.23.2",
+    "nodemailer": "^9.0.5"
   },
   "devDependencies": {
-    "@types/express": "^5.0.1",
-    "@types/node": "^22.14.0",
-    "eslint": "^9.23.0",
-    "nodemon": "^3.1.9",
-    "prettier": "^3.5.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.2"
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.1.2",
+    "@types/nodemailer": "^8.0.1",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.11",
+    "typescript": "^7.0.2"
   }
 }
