@@ -1,18 +1,21 @@
 import { Response } from 'express';
-import { TErrorCodes, TSuccesCodes } from '../types';
-import { RESPONSES } from './constants';
+import { TErrorCodes, TErrorResponse, TSuccesCodes } from '../types.js';
+import { ERR_RESPONSES, RESPONSES } from './constants.js';
 
 export function CustomError(
   res: Response,
   other?: {
     code?: TErrorCodes;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: any;
-    message?: string;
+    error?: string;
   },
 ) {
   const code = other?.code || 500;
-  const message = other?.message || RESPONSES[code];
-  res.status(code).send(message);
+  const error: TErrorResponse = other?.error
+    ? { message: other.error }
+    : ERR_RESPONSES[code];
+  res.status(code).json(error);
 
   if (other?.logger) {
     console.error(other.logger);
@@ -23,10 +26,11 @@ export function CustomResponse(
   res: Response,
   other?: {
     code?: TSuccesCodes;
-    message?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: any;
   },
 ) {
   const code = other?.code || 200;
-  const message = other?.message || RESPONSES[code];
-  res.status(code).send(message);
+  const body = other?.data || RESPONSES[code];
+  res.status(code).json(body);
 }

@@ -1,11 +1,11 @@
 import { RequestHandler } from 'express';
-import { checkFields } from '@/utils/service';
+import { checkFields } from '@/utils/service.js';
 import bcrypt from 'bcrypt';
-import { GetUserByEmail } from '@/services/users/users.service';
-import { CustomError, CustomResponse } from '@/utils/response';
-import { sendCodeMail } from '@/services/mail/mail.service';
-import { TLoginBody } from '@/models/users/types';
-import { CreateCode } from '@/services/users/codes.service';
+import { GetUserByEmail } from '@/services/users/users.service.js';
+import { CustomError, CustomResponse } from '@/utils/response/index.js';
+import { sendCodeMail } from '@/services/mail/mail.service.js';
+import { TLoginBody } from '@/models/users/types.js';
+import { CreateCode } from '@/services/users/codes.service.js';
 
 export const authValidate: RequestHandler = async (req, res) => {
   const body: TLoginBody = req.body;
@@ -20,7 +20,7 @@ export const authValidate: RequestHandler = async (req, res) => {
     const user = await GetUserByEmail(email);
 
     if (!user) {
-      return CustomError(res, { code: 400 });
+      return CustomError(res, { code: 400, error: 'User not found.' });
     }
 
     const match = await bcrypt.compare(password, user.pass_hash);
@@ -29,21 +29,19 @@ export const authValidate: RequestHandler = async (req, res) => {
       return CustomError(res, { code: 400 });
     }
 
-    const code = await CreateCode(user.id);
+    const code = await CreateCode(user.user_id);
 
     if (!code) {
       throw new Error(`Failed to create code.`);
     }
 
-    const mailStatus = await sendCodeMail([user.email], {
-      code: code,
-    });
+    const mailStatus = await sendCodeMail([user.email], code);
 
     if (!mailStatus) {
       throw new Error(`Failed to send email: ${email}`);
     }
 
-    CustomResponse(res, { code: 200, message: 'Код отправлен на почту' });
+    CustomResponse(res);
   } catch (error) {
     CustomError(res, { code: 500, logger: error });
   }

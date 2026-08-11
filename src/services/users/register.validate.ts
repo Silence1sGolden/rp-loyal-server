@@ -1,9 +1,11 @@
 import { RequestHandler } from 'express';
-import { checkFields } from '@/utils/service';
-import { CustomError } from '@/utils/response';
-import { CreateUser, GetUserByEmail } from '@/services/users/users.service';
-import { CreatePassword } from '@/services/users/passwords.service';
-import { TRegBody } from '@/models/users/types';
+import { checkFields } from '@/utils/service.js';
+import { CustomError, CustomResponse } from '@/utils/response/index.js';
+import { CreateUser, GetUserByEmail } from '@/services/users/users.service.js';
+import { CreatePassword } from '@/services/users/passwords.service.js';
+import { TRegBody } from '@/models/users/types.js';
+import { createAuthToken, createVerifyToken } from '@/utils/tokens/index.js';
+import { sendLinkMail } from '../mail/mail.service.js';
 
 export const regValidate: RequestHandler = async (req, res) => {
   const body: TRegBody = req.body;
@@ -24,17 +26,30 @@ export const regValidate: RequestHandler = async (req, res) => {
       });
     }
 
-    const userID = await CreateUser(username, email);
+    const user_id = await CreateUser(username, email);
 
-    if (!userID) {
+    if (!user_id) {
       throw new Error('The user has not been created.');
     }
 
-    const createdPass = await CreatePassword(userID, password);
+    const passIsCreated = await CreatePassword(user_id, password);
 
-    if (createdPass !== userID) {
+    if (!passIsCreated) {
       throw new Error('The password was not created for the user.');
     }
+
+    const jwtlink = createVerifyToken(user_id);
+
+    const result = await sendLinkMail(email, jwtlink);
+
+    if (!result) {
+      return CustomError(res, { code: 500 });
+    }
+
+    CustomResponse(res, {
+      code: 200,
+      message: 'Confirmation has been sent to your email.',
+    });
   } catch (error) {
     CustomError(res, { code: 500, logger: error });
   }

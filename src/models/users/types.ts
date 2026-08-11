@@ -16,7 +16,7 @@ export type TRefreshTokenPayload = { session_id: number };
 
 export type TUserRow = RowDataPacket & TUser;
 export type TUser = {
-  id: number;
+  user_id: number;
   username: string;
   email: string;
   is_activated: string;
