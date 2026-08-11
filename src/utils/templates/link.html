@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Piazzolla:ital,opsz,wght@0,8..30,100..900;1,8..30,100..900&display=swap');
+
+      * {
+        margin: 0px;
+        padding: 0px;
+        border: none;
+        box-sizing: border-box;
+        color: #cccccc;
+        font-family: 'Piazzolla', serif;
+        font-weight: 200;
+        background-color: #171717;
+      }
+      
+      .link:hover {
+        cursor: pointer;
+        text-shadow: 0px 0px 10px rgb(52, 214, 52);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="link" href="{{base_url}}/verify/{{jwtlink}}">Подтвердить</a>
+  </body>
+</html>

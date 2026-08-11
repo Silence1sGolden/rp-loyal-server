@@ -1,5 +1,5 @@
-import { db } from '@/db';
-import { TSession, TSessionRow } from '@/models/users/types';
+import { db } from '@/db.js';
+import { TSession, TSessionRow } from '@/models/users/types.js';
 import { ResultSetHeader } from 'mysql2';
 
 export async function GetSessionsByUserID(

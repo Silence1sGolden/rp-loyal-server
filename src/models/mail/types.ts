@@ -9,6 +9,11 @@ export type TConfirmCodeMailProps = {
   code: string;
 };
 
+export type TConfirmLinkMailProps = {
+  base_url: string;
+  jwtlink: string;
+};
+
 export type TConfirmUserMailProps = {
   hash: string;
 };
@@ -19,3 +24,10 @@ export type TCode = {
   code: string;
   expires_at: string;
 };
+
+export type TTempltesProps = {
+  code: TConfirmCodeMailProps;
+  link: TConfirmLinkMailProps;
+};
+
+export type TTemplates = keyof TTempltesProps;

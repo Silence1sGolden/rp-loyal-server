@@ -1,6 +1,6 @@
-import { db } from '@/db';
-import { TCodeRow } from '@/models/mail/types';
-import { getRandomCode } from '@/utils/service';
+import { db } from '@/db.js';
+import { TCodeRow } from '@/models/mail/types.js';
+import { getRandomCode } from '@/utils/service.js';
 import { ResultSetHeader } from 'mysql2';
 
 export async function CreateCode(user_id: number): Promise<string | null> {
@@ -10,15 +10,13 @@ export async function CreateCode(user_id: number): Promise<string | null> {
     `
         INSERT INTO codes (user_id, code)
         VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE
+          code = VALUES(code)
         `,
     [user_id, code],
   );
 
-  if (result.affectedRows > 0) {
-    return code;
-  }
-
-  return null;
+  return result.affectedRows > 0 ? code : null;
 }
 
 export async function CheckCode(
