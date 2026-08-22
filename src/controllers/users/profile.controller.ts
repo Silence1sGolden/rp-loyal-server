@@ -1,8 +1,8 @@
-import { GetUserByID } from '@/services/users/users.service.js';
+import { getProfileByUserID } from '@/services/profiles/profiles.service.js';
 import { CustomError, CustomResponse } from '@/utils/response/index.js';
 import { RequestHandler } from 'express';
 
-export const getUser: RequestHandler = async (req, res) => {
+export const profileController: RequestHandler = async (req, res) => {
   const userID = res.locals.userID;
 
   if (!userID) {
@@ -10,15 +10,15 @@ export const getUser: RequestHandler = async (req, res) => {
   }
 
   try {
-    const user = await GetUserByID(userID);
+    const profile = await getProfileByUserID(userID);
 
-    if (!user) {
+    if (!profile) {
       return CustomError(res, { code: 404 });
     }
 
     CustomResponse(res, {
       code: 200,
-      data: { username: user.username, email: user.email },
+      data: profile,
     });
   } catch (error) {
     return CustomError(res, { code: 500 });

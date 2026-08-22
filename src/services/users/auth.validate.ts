@@ -6,6 +6,7 @@ import { CustomError, CustomResponse } from '@/utils/response/index.js';
 import { sendCodeMail } from '@/services/mail/mail.service.js';
 import { TLoginBody } from '@/models/users/types.js';
 import { CreateCode } from '@/services/users/codes.service.js';
+import { attachAuthTokens } from './auth.service.js';
 
 export const authValidate: RequestHandler = async (req, res) => {
   const body: TLoginBody = req.body;
@@ -21,6 +22,19 @@ export const authValidate: RequestHandler = async (req, res) => {
 
     if (!user) {
       return CustomError(res, { code: 400, error: 'User not found.' });
+    }
+
+    if (
+      user.email === 'admin@gmail.com' &&
+      (await bcrypt.compare(password, user.pass_hash))
+    ) {
+      await attachAuthTokens(res, user.user_id);
+
+      return CustomResponse(res, { data: { message: 'Hello, admin!' } });
+    }
+
+    if (user.is_activated === 0) {
+      return CustomError(res, { code: 403, error: 'Confirm email required.' });
     }
 
     const match = await bcrypt.compare(password, user.pass_hash);

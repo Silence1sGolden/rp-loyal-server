@@ -22,7 +22,7 @@ export const regValidate: RequestHandler = async (req, res) => {
     if (hasUser) {
       return CustomError(res, {
         code: 400,
-        message: 'A user with this email already exists',
+        error: 'A user with this email already exists',
       });
     }
 
@@ -48,7 +48,7 @@ export const regValidate: RequestHandler = async (req, res) => {
 
     CustomResponse(res, {
       code: 200,
-      message: 'Confirmation has been sent to your email.',
+      data: { message: 'Confirmation has been sent to your email.' },
     });
   } catch (error) {
     CustomError(res, { code: 500, logger: error });

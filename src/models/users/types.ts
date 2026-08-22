@@ -19,7 +19,7 @@ export type TUser = {
   user_id: number;
   username: string;
   email: string;
-  is_activated: string;
+  is_activated: number;
   pass_hash: string;
 };
 

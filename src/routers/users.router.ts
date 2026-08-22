@@ -6,7 +6,7 @@ import { authController } from '@/controllers/users/auth.controller.js';
 import { linkValidate } from '@/services/mail/link.validate.js';
 import { registerController } from '@/controllers/users/register.controller.js';
 import { authCheck } from '@/middleware/users/auth.check.js';
-import { getUser } from '@/controllers/users/user.controller.js';
+import { profileController } from '@/controllers/users/profile.controller.js';
 
 const router = Router();
 
@@ -16,6 +16,6 @@ router.post('/register', regValidate);
 router.post('/verify/code', codeValidate, authController);
 router.get('/verify/:jwtlink', linkValidate, registerController);
 
-router.get('/profile', authCheck, getUser);
+router.get('/profile', authCheck, profileController);
 
 export { router as usersRouter };
