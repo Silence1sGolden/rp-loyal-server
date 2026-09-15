@@ -4,15 +4,15 @@ import bcrypt from 'bcrypt';
 import { GetUserByEmail } from '@/services/users/users.service.js';
 import { CustomError, CustomResponse } from '@/utils/response/index.js';
 import { sendCodeMail } from '@/services/mail/mail.service.js';
-import { TLoginBody } from '@/models/users/types.js';
 import { CreateCode } from '@/services/users/codes.service.js';
-import { attachAuthTokens } from './auth.service.js';
+import { TLoginBody } from '@/models/auth.js';
 
 export const authValidate: RequestHandler = async (req, res) => {
   const body: TLoginBody = req.body;
+  const check = checkFields(body, ['email', 'password']);
 
-  if (checkFields(body, ['email', 'password'])) {
-    return CustomError(res, { code: 400 });
+  if (check) {
+    return CustomError(res, { code: 400, error: check });
   }
 
   const { email, password } = body;
@@ -21,16 +21,10 @@ export const authValidate: RequestHandler = async (req, res) => {
     const user = await GetUserByEmail(email);
 
     if (!user) {
-      return CustomError(res, { code: 400, error: 'User not found.' });
-    }
-
-    if (
-      user.email === 'admin@gmail.com' &&
-      (await bcrypt.compare(password, user.pass_hash))
-    ) {
-      await attachAuthTokens(res, user.user_id);
-
-      return CustomResponse(res, { data: { message: 'Hello, admin!' } });
+      return CustomError(res, {
+        code: 400,
+        error: 'Incorrect email or password.',
+      });
     }
 
     if (user.is_activated === 0) {
@@ -40,7 +34,10 @@ export const authValidate: RequestHandler = async (req, res) => {
     const match = await bcrypt.compare(password, user.pass_hash);
 
     if (!match) {
-      return CustomError(res, { code: 400 });
+      return CustomError(res, {
+        code: 400,
+        error: 'Incorrect email or password.',
+      });
     }
 
     const code = await CreateCode(user.user_id);

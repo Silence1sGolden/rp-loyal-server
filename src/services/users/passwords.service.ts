@@ -8,7 +8,7 @@ export async function CreatePassword(
 ): Promise<boolean> {
   const pass_hash = await bcrypt.hash(password, 5);
 
-  const [result] = await db.query<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
         INSERT INTO passwords (user_id, pass_hash)
         VALUES (?, ?)

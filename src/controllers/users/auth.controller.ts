@@ -1,11 +1,11 @@
-import { TCodeBody } from '@/models/mail/types.js';
+import { TCodeBody } from '@/models/mail.js';
 import { attachAuthTokens } from '@/services/users/auth.service.js';
 import { CheckCode } from '@/services/users/codes.service.js';
 import { GetUserByEmail } from '@/services/users/users.service.js';
 import { CustomError, CustomResponse } from '@/utils/response/index.js';
 import { RequestHandler } from 'express';
 
-export const authController: RequestHandler = async (req, res) => {
+export const authController: RequestHandler = async (_, res) => {
   const data: TCodeBody | undefined = res.locals.code;
 
   if (!data) {
@@ -30,6 +30,6 @@ export const authController: RequestHandler = async (req, res) => {
     await attachAuthTokens(res, user.user_id);
     CustomResponse(res);
   } catch (error) {
-    CustomError(res, { code: 500, logger: error });
+    CustomError(res, { logger: error });
   }
 };

@@ -1,8 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import { usersRouter } from './routers/users.router.js';
-import { db } from './db.js';
+import { authRouter } from './routers/auth.router.js';
+import path from 'path';
 import cookieParser from 'cookie-parser';
+import { roomsRouter } from './routers/rooms.router.js';
+import { imagesRouter } from './routers/images.routes.js';
+import { fileURLToPath } from 'url';
+import { storiesRouter } from './routers/stories.routers.js';
+import { charactersRouter } from './routers/characters.router.js';
+import { profilesRouter } from './routers/users.router.js';
+import { applicationRoute } from './routers/applications.router.js';
+import { tagsRoute } from './routers/tags.router.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const app = express();
 
@@ -20,18 +31,12 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/', (_, res) => {
-  res.send('Hello');
-});
-
-app.get('/api/health', async (_, res) => {
-  try {
-    const [users] = await db.query('SELECT * FROM users');
-
-    res.send({ status: true, data: 'OK', database: 'CONNECTED', users: users });
-  } catch (error) {
-    res.status(500).send({ status: false, data: 'FAIL', error: error });
-  }
-});
-
-app.use('/api/v1', usersRouter);
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/api/v1', authRouter);
+app.use('/api/v1/profiles', profilesRouter);
+app.use('/api/v1/attach', imagesRouter);
+app.use('/api/v1/rooms', roomsRouter);
+app.use('/api/v1/stories', storiesRouter);
+// app.use('/api/v1/stories/:storyID/applications', applicationRoute);
+app.use('/api/v1/characters', charactersRouter);
+app.use('/api/v1/tags', tagsRoute);

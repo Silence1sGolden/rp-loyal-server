@@ -1,9 +1,9 @@
 import { db } from '@/db.js';
-import { TUser, TUserRow } from '../../models/users/types.js';
+import { TUser, TUserRow } from '@/models/users.js';
 import { ResultSetHeader } from 'mysql2';
 
 export async function GetUserByEmail(email: string): Promise<TUser | null> {
-  const [users] = await db.query<TUserRow[]>(
+  const [users] = await db.execute<TUserRow[]>(
     `
         SELECT users.id as user_id, 
                users.username as username,
@@ -21,7 +21,7 @@ export async function GetUserByEmail(email: string): Promise<TUser | null> {
 }
 
 export async function GetUserByID(user_id: number): Promise<TUser | null> {
-  const [users] = await db.query<TUserRow[]>(
+  const [users] = await db.execute<TUserRow[]>(
     `
         SELECT users.id as user_id, 
                users.username as username,
@@ -42,7 +42,7 @@ export async function CreateUser(
   username: string,
   email: string,
 ): Promise<number | null> {
-  const [result] = await db.query<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
         INSERT INTO users (username, email)
         VALUES (?, ?)
@@ -57,8 +57,8 @@ export async function CreateUser(
   return null;
 }
 
-export async function VarifyUser(user_id: number): Promise<boolean> {
-  const [result] = await db.query<ResultSetHeader>(
+export async function VerifyUser(user_id: number): Promise<boolean> {
+  const [result] = await db.execute<ResultSetHeader>(
     `
         UPDATE users
         SET is_activated = true

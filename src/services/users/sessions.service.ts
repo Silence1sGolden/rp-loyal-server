@@ -1,11 +1,11 @@
 import { db } from '@/db.js';
-import { TSession, TSessionRow } from '@/models/users/types.js';
+import { TSession, TSessionRow } from '@/models/auth.js';
 import { ResultSetHeader } from 'mysql2';
 
 export async function GetSessionsByUserID(
   user_id: number,
 ): Promise<TSession[] | null> {
-  const [sessions] = await db.query<TSessionRow[]>(
+  const [sessions] = await db.execute<TSessionRow[]>(
     `
         SELECT *
         FROM sessions
@@ -24,7 +24,7 @@ export async function GetSessionsByUserID(
 export async function GetSessionByID(
   session_id: number,
 ): Promise<TSession | null> {
-  const [sessions] = await db.query<TSessionRow[]>(
+  const [sessions] = await db.execute<TSessionRow[]>(
     `
         SELECT *
         FROM sessions
@@ -41,7 +41,7 @@ export async function GetSessionByID(
 }
 
 export async function UpdateSessionByID(session_id: number): Promise<boolean> {
-  const [result] = await db.query<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
         UPDATE sessions
         SET expires_at = NOW() + INTERVAL 7 DAY
@@ -54,7 +54,7 @@ export async function UpdateSessionByID(session_id: number): Promise<boolean> {
 }
 
 export async function CreateSession(user_id: number): Promise<number | null> {
-  const [result] = await db.query<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
         INSERT INTO sessions (user_id)
         VALUES (?)

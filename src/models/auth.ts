@@ -14,15 +14,6 @@ export type TRegBody = {
 export type TAuthTokenPayload = { user_id: number };
 export type TRefreshTokenPayload = { session_id: number };
 
-export type TUserRow = RowDataPacket & TUser;
-export type TUser = {
-  user_id: number;
-  username: string;
-  email: string;
-  is_activated: number;
-  pass_hash: string;
-};
-
 export type TSessionRow = RowDataPacket & TSession;
 export type TSession = {
   id: number;

@@ -6,7 +6,7 @@ import { ResultSetHeader } from 'mysql2';
 export async function CreateCode(user_id: number): Promise<string | null> {
   const code = getRandomCode();
 
-  const [result] = await db.query<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
         INSERT INTO codes (user_id, code)
         VALUES (?, ?)
@@ -23,7 +23,7 @@ export async function CheckCode(
   user_id: number,
   code: string,
 ): Promise<boolean> {
-  const [codes] = await db.query<TCodeRow[]>(
+  const [codes] = await db.execute<TCodeRow[]>(
     `
         SELECT *
         FROM codes
@@ -33,7 +33,7 @@ export async function CheckCode(
   );
 
   if (codes.length > 0) {
-    await db.query<TCodeRow[]>(
+    await db.execute<TCodeRow[]>(
       `
         DELETE
         FROM codes

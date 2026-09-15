@@ -1,7 +1,4 @@
-import {
-  TAuthTokenPayload,
-  TRefreshTokenPayload,
-} from '@/models/users/types.js';
+import { TAuthTokenPayload, TRefreshTokenPayload } from '@/models/auth.js';
 import { Secret } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import ms from 'ms';

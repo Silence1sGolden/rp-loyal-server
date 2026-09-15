@@ -1,3 +1,6 @@
+export const MAX_LIMIT = 100;
+export const DEFAULT_LIMIT = 50;
+
 export function getRandomCode(): string {
   let code: string = '';
 
@@ -27,4 +30,19 @@ export function checkFields<T>(obj: T, fields: (keyof T)[]): string | null {
     }
   });
   return null;
+}
+
+export const customParse = (v: unknown) =>
+  typeof v === 'string' ? JSON.parse(v) : v;
+
+export function sanitizeLimit(value: number | undefined): number {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n <= 0) return DEFAULT_LIMIT;
+  return Math.min(n, MAX_LIMIT);
+}
+
+export function sanitizeOffset(value: number | undefined): number {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0) return 0;
+  return n;
 }

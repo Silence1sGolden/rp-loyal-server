@@ -1,21 +1,15 @@
 import { Router } from 'express';
-import { authValidate } from '@/services/users/auth.validate.js';
-import { regValidate } from '@/services/users/register.validate.js';
-import { codeValidate } from '@/services/mail/code.validate.js';
-import { authController } from '@/controllers/users/auth.controller.js';
-import { linkValidate } from '@/services/mail/link.validate.js';
-import { registerController } from '@/controllers/users/register.controller.js';
 import { authCheck } from '@/middleware/users/auth.check.js';
-import { profileController } from '@/controllers/users/profile.controller.js';
+import {
+  getMyProfileController,
+  getProfileController,
+} from '@/controllers/users/profile.controller.js';
+import { getUserStoriesController } from '@/controllers/stories/stories.controller.js';
 
 const router = Router();
 
-router.post('/auth', authValidate);
-router.post('/register', regValidate);
+router.get('/', authCheck, getMyProfileController);
+router.get('/:profileID', authCheck, getProfileController);
+router.get('/:profileID/stories', authCheck, getUserStoriesController);
 
-router.post('/verify/code', codeValidate, authController);
-router.get('/verify/:jwtlink', linkValidate, registerController);
-
-router.get('/profile', authCheck, profileController);
-
-export { router as usersRouter };
+export { router as profilesRouter };

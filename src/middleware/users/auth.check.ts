@@ -6,14 +6,12 @@ import {
 } from '@/utils/tokens/index.js';
 import { CustomError } from '@/utils/response/index.js';
 import {
-  TAuthTokenPayload,
-  TRefreshTokenPayload,
-} from '@/models/users/types.js';
-import {
   GetSessionByID,
   UpdateSessionByID,
 } from '@/services/users/sessions.service.js';
 import ms from 'ms';
+import { GetUserByID } from '@/services/users/users.service.js';
+import { TAuthTokenPayload, TRefreshTokenPayload } from '@/models/auth.js';
 
 export async function authCheck(
   req: Request,
@@ -25,10 +23,20 @@ export async function authCheck(
   if (auth_token) {
     const user_id = verifyToken<TAuthTokenPayload>(auth_token, 'auth')?.user_id;
 
-    // Пропускаем пользователя
     if (user_id) {
-      res.locals.userID = user_id;
-      return next();
+      try {
+        const user = await GetUserByID(user_id);
+
+        if (user) {
+          res.locals.userID = user_id;
+          return next();
+        }
+        throw new Error('Unknown user');
+      } catch (error) {
+        res.clearCookie('auth_token');
+        res.clearCookie('refresh_token');
+        return CustomError(res, { code: 404, logger: error });
+      }
     }
   }
 
