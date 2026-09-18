@@ -1,16 +1,15 @@
 import express from 'express';
 import cors from 'cors';
-import { authRouter } from './routers/auth.router.js';
+import { authRouter } from './modules/auth/auth.router.js';
 import path from 'path';
 import cookieParser from 'cookie-parser';
-import { roomsRouter } from './routers/rooms.router.js';
-import { imagesRouter } from './routers/images.routes.js';
+import { roomsRouter } from './modules/rooms/rooms.router.js';
+import { imagesRouter } from './modules/images/images.routes.js';
 import { fileURLToPath } from 'url';
-import { storiesRouter } from './routers/stories.routers.js';
-import { charactersRouter } from './routers/characters.router.js';
-import { profilesRouter } from './routers/users.router.js';
-import { applicationRoute } from './routers/applications.router.js';
-import { tagsRoute } from './routers/tags.router.js';
+import { charactersRouter } from './modules/characters/characters.router.js';
+import { profilesRouter } from './modules/profiles/profiles.router.js';
+import { tagsRoute } from './modules/tags/tags.router.js';
+import { storiesRouter } from './modules/stories/stories.routers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +24,7 @@ app.use(
     credentials: true,
 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type'],
   }),
 );
 app.use(express.json());
@@ -37,6 +36,5 @@ app.use('/api/v1/profiles', profilesRouter);
 app.use('/api/v1/attach', imagesRouter);
 app.use('/api/v1/rooms', roomsRouter);
 app.use('/api/v1/stories', storiesRouter);
-// app.use('/api/v1/stories/:storyID/applications', applicationRoute);
 app.use('/api/v1/characters', charactersRouter);
 app.use('/api/v1/tags', tagsRoute);

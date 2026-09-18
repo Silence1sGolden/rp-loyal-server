@@ -1,3 +1,5 @@
+import { Pool, PoolConnection } from 'mysql2/promise';
+
 export const MAX_LIMIT = 100;
 export const DEFAULT_LIMIT = 50;
 
@@ -45,4 +47,33 @@ export function sanitizeOffset(value: number | undefined): number {
   const n = Number(value);
   if (!Number.isInteger(n) || n < 0) return 0;
   return n;
+}
+
+export type Db = Pool | PoolConnection;
+
+/**
+ * Открывает транзакцию на отдельном соединении из пула,
+ * выполняет `operation`, коммитит при успехе, откатывает при ошибке.
+ * Соединение всегда возвращается в пул.
+ *
+ * Контракт:
+ *   - `operation` вернула значение  → COMMIT, функция возвращает это значение
+ *   - `operation` бросила исключение → ROLLBACK, исключение пробрасывается дальше
+ */
+export async function withTransaction<T>(
+  pool: Pool,
+  operation: (conn: PoolConnection) => Promise<T>,
+): Promise<T> {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const result = await operation(conn);
+    await conn.commit();
+    return result;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }

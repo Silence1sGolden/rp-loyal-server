@@ -8,7 +8,8 @@ export function CustomError(
     code?: TErrorCodes;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: any;
-    error?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error?: any;
   },
 ) {
   const code = other?.code || 500;

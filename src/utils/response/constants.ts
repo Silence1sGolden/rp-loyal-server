@@ -18,6 +18,9 @@ export const ERR_RESPONSES: Record<TErrorCodes, TErrorResponse> = {
   404: {
     message: 'Not Found',
   },
+  409: {
+    message: 'Conflict',
+  },
   500: {
     message: 'Internal Server Error',
   },
